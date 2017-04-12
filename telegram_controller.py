@@ -65,12 +65,12 @@ class TelegramController(object):
 		# self._start_receiver()
 
 	def _run_tg_server(self):
-		tg = Telegram(
-			telegram="../../tg/bin/telegram-cli",
-			pubkey_file="../../tg/tg-server.pub",
+		self.tg = Telegram(
+			telegram="tg/bin/telegram-cli",
+			pubkey_file="tg/tg-server.pub",
 			port=self.port)
-		self.receiver = tg.receiver
-		self.sender = tg.sender
+		self.receiver = self.tg.receiver
+		self.sender = self.tg.sender
 
 	@coroutine
 	def _receive_message_callback(self):
@@ -83,6 +83,8 @@ class TelegramController(object):
 
 		except KeyboardInterrupt:
 			self.receiver.stop()
+    finally:
+      self.receiver.stop()
 
 	def _start_receiver(self):
 		self.receiver.start()
