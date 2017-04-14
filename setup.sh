@@ -23,5 +23,13 @@ if [ "$?" == "127" ] || ! stringContains "${REQUIRED_PYTHON3_VERSION}" "${PYTHON
 	fi
 fi
 
-echo 'Starting setup...'
+echo 'Initializing setup...'
+echo 'Please input Telegram api_id: '
+read -s TG_API_ID 
+echo 'Please input Telegram api_hash: '
+read -s TG_API_HASH
 mkdir creds
+echo '{"api_id": ${TG_API_ID}, "api_hash": "${TG_API_HASH}"}' >> creds/telegram.json
+python3 -m venv virtualenv
+source virtualenv/bin/activate
+pip install -r requirements.txt

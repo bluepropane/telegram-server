@@ -1,50 +1,46 @@
-from telethon import TelegramClient
+from telethon import TelegramClient, RPCError
+import json
+
+config = json.load(open('creds/telegram.json'))
 
 
 class TelegramController(TelegramClient):
 
-	def __init__(self, port=3007):
-		self.port = port
-		self.receiver = None
-		self.sender = None
-		self.observers = []
-		self._run_tg_server()
-		# self._start_receiver()
+    def __init__(self, session_user_id, user_phone, proxy=None):
 
-	def _run_tg_server(self):
-		self.tg = Telegram(
-			telegram="tg/bin/telegram-cli",
-			pubkey_file="tg/tg-server.pub",
-			port=self.port)
-		self.receiver = self.tg.receiver
-		self.sender = self.tg.sender
+        print('Initializing interactive example...')
+        super().__init__(session_user_id, config.get('api_id'), config.get('api_hash'), proxy)
 
-	@coroutine
-	def _receive_message_callback(self):
-		try:
-			while True:
-				msg = (yield) # it waits until it got a message, stored now in msg.
-				if hasattr(msg, 'text'):
-					print msg.text
-				self._notify_observers(msg)
+        # Store all the found media in memory here,
+        # so it can be downloaded if the user wants
+        self.found_media = set()
 
-		except KeyboardInterrupt:
-			self.receiver.stop()
-    finally:
-      self.receiver.stop()
+        print('Connecting to Telegram servers...')
+        self.connect()
 
-	def _start_receiver(self):
-		self.receiver.start()
-		print 'Telegram receiver started on port %s, waiting for messages...' % self.port
-		self.receiver.message(self._receive_message_callback())
-		self.receiver.stop()
+    def authorize(self):
 
-	def _notify_observers(self, msg):
-		for observer in self.observers:
-			observer(msg)
+    def authorize_code(self, code):
+        try:
+            code_ok = self.sign_in(user_phone, code)
+
+        # Two-step verification may be enabled
+        except RPCError as e:
+            if e.password_required:
+                pw = getpass(
+                    'Two step verification is enabled. Please enter your password: ')
+                code_ok = self.sign_in(password=pw)
+            else:
+                raise e
 
 	def on_message(self, callback):
-		self.observers.append(callback)
+		"""
+		add an observer for message event
+		@param callback: called on message event with arguments (update_object). update_object can be
+						 of type {telethon.tl.types.UpdateShortChatMessage} or
+						 		 {telethon.tl.types.UpdateShortMessage}
+		"""
+		self.add_update_handler(callback)
 
 	def send(self, usernames, msg):
 		if isinstance(usernames, str):
