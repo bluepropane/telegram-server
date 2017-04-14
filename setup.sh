@@ -4,6 +4,39 @@
 # setup script to install dependencies and configure environment
 
 
+########### PHASE 1: MAKING THE CLI FOR THE AI TO SEND/RECEIVE MSGS ##########
+git clone --recursive https://github.com/vysheng/tg.git && cd tg
+
+# READLINE_BASE_DIR=/usr/local/opt/readline
+brew install libconfig readline lua libevent jansson
+if [ "$?" == "127" ]; then
+	sudo apt-get install libreadline-dev libconfig-dev libssl-dev lua5.2 liblua5.2-dev libevent-dev libjansson-dev libpython-dev
+
+READLINE_VERSION=`ls /usr/local/Cellar/readline`
+READLINE_VERSION=(${READLINE_VERSION// / })
+READLINE_VERSION=${READLINE_VERSION[0]}
+READLINE_BASE_DIR=/usr/local/Cellar/readline/${READLINE_VERSION}
+
+export CFLAGS="-I/usr/local/include -I${READLINE_BASE_DIR}/include"
+export LDFLAGS="-L/usr/local/lib -L${READLINE_BASE_DIR}/lib -L/usr/local/opt/openssl/lib"
+export CPPFLAGS="-I/usr/local/opt/openssl/include"
+
+check_libreadline () {
+	# fix for a very specific type of error
+	ls /usr/local/opt/readline/lib/libreadline.6.dylib
+	if [ "$?" == "1" ]; then		
+		rm -rf /usr/local/opt/readline
+		ln -s ${READLINE_BASE_DIR} /usr/local/opt/readline
+	fi
+}
+
+./configure
+make
+
+###############################################################################
+
+
+########### PHASE 2: MAKING THE CLI FOR THE AI TO SEND/RECEIVE MSGS ##########
 stringContains () { [ -z "${2##*$1*}" ]; }
 
 # check if we have python3 installed first
@@ -15,8 +48,11 @@ if [ "$?" == "127" ] || ! stringContains "${REQUIRED_PYTHON3_VERSION}" "${PYTHON
 	echo "Python >= ${REQUIRED_PYTHON3_VERSION} has to be installed to proceed. Install Python ${REQUIRED_PYTHON3_VERSION} on this machine? (y/n):"
 	read INSTALL_PYTHON
 	if [ "${INSTALL_PYTHON}" == "yes" ]; then
-		# install py3
+		# install py3 - currently only linux or OSX path...
 		sudo apt-get install python${REQUIRED_PYTHON3_VERSION}
+		if [ "$?" == "127" ]; then
+			brew install python3
+		fi
 	else
 		echo 'Aborting setup'
 		exit 1
@@ -29,7 +65,10 @@ read -s TG_API_ID
 echo 'Please input Telegram api_hash: '
 read -s TG_API_HASH
 mkdir creds
+mkdir sessions
 echo '{"api_id": ${TG_API_ID}, "api_hash": "${TG_API_HASH}"}' >> creds/telegram.json
 python3 -m venv virtualenv
 source virtualenv/bin/activate
 pip install -r requirements.txt
+
+###############################################################################

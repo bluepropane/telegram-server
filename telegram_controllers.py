@@ -1,5 +1,6 @@
 from telegram_models import TelegramUserAccount
 import telegram_util
+import re
 
 
 class TelegramController(object):
@@ -8,9 +9,12 @@ class TelegramController(object):
         phone_number = self._sanitize_phone_number(request_params.get('phone'))
         telegram_user = TelegramUserAccount(phone_number, user_phone=phone_number)
         if not telegram_user.is_user_authorized():
+            print('Telegram user unauthorized.')
             raise Exception('Telegram user unauthorized.')
         else:
             telegram_user.get_contacts()
+
+        return telegram_user.result
 
     def post(self, request_params):
         """
@@ -30,7 +34,7 @@ class TelegramController(object):
         return {}
 
     @staticmethod
-    def _sanitize_phone_number(self, number):
+    def _sanitize_phone_number(number):
         """
         Take away the leading '+' for standardization. Just add it back if needed.
         @param number: phone number

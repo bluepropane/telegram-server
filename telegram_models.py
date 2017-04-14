@@ -30,6 +30,7 @@ class TelegramUserAccount(TelegramClient):
 
         print('Connecting to Telegram servers...')
         self.connect()
+        print(self.is_user_authorized())
 
     def authorize(self):
         """
@@ -57,4 +58,7 @@ class TelegramUserAccount(TelegramClient):
                 raise e
 
     def get_contacts(self):
-        self.result = self.invoke(GetContactsRequest(self.api_hash))
+        result = self.invoke(GetContactsRequest(self.api_hash))
+        self.contacts = []
+        for user in result.users:
+
