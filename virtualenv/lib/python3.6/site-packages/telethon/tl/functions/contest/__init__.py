@@ -1,0 +1,1 @@
+from telethon.tl.functions.contest.save_developer_info import SaveDeveloperInfoRequest

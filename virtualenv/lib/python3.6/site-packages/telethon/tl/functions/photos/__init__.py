@@ -1,0 +1,4 @@
+from telethon.tl.functions.photos.update_profile_photo import UpdateProfilePhotoRequest
+from telethon.tl.functions.photos.upload_profile_photo import UploadProfilePhotoRequest
+from telethon.tl.functions.photos.delete_photos import DeletePhotosRequest
+from telethon.tl.functions.photos.get_user_photos import GetUserPhotosRequest

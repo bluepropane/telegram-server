@@ -4,28 +4,24 @@
 # setup script to install dependencies and configure environment
 
 
-git clone --recursive https://github.com/vysheng/tg.git && cd tg
+stringContains () { [ -z "${2##*$1*}" ]; }
 
-# READLINE_BASE_DIR=/usr/local/opt/readline
-brew install libconfig readline lua libevent jansson
-
-READLINE_VERSION=`ls /usr/local/Cellar/readline`
-READLINE_VERSION=(${READLINE_VERSION// / })
-READLINE_VERSION=${READLINE_VERSION[0]}
-READLINE_BASE_DIR=/usr/local/Cellar/readline/${READLINE_VERSION}
-
-export CFLAGS="-I/usr/local/include -I${READLINE_BASE_DIR}/include"
-export LDFLAGS="-L/usr/local/lib -L${READLINE_BASE_DIR}/lib -L/usr/local/opt/openssl/lib"
-export CPPFLAGS="-I/usr/local/opt/openssl/include"
-
-check_libreadline () {
-	# fix for a very specific type of error
-	ls /usr/local/opt/readline/lib/libreadline.6.dylib
-	if [ "$?" == "1" ]; then		
-		rm -rf /usr/local/opt/readline
-		ln -s ${READLINE_BASE_DIR} /usr/local/opt/readline
+# check if we have python3 installed first
+REQUIRED_PYTHON3_VERSION=3.6
+PYTHON3_VERSION=`python3 --version`
+if [ "$?" == "127" ] || ! stringContains "${REQUIRED_PYTHON3_VERSION}" "${PYTHON3_VERSION}" ; then
+	# no py3
+	echo "Could not locate Python ${REQUIRED_PYTHON3_VERSION}"
+	echo "Python >= ${REQUIRED_PYTHON3_VERSION} has to be installed to proceed. Install Python ${REQUIRED_PYTHON3_VERSION} on this machine? (y/n):"
+	read INSTALL_PYTHON
+	if [ "${INSTALL_PYTHON}" == "yes" ]; then
+		# install py3
+		sudo apt-get install python${REQUIRED_PYTHON3_VERSION}
+	else
+		echo 'Aborting setup'
+		exit 1
 	fi
-}
+fi
 
-./configure
-make
+echo 'Starting setup...'
+mkdir creds

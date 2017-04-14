@@ -1,0 +1,3 @@
+[console_scripts]
+gen_tl = tl_generator:clean_and_generate
+

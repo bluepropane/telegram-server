@@ -1,60 +1,7 @@
-from pytg import Telegram
-from pytg.utils import coroutine
+from telethon import TelegramClient
 
-"""
-Example message schema
-{
-  "own": false,
-  "text": "Lololol",
-  "peer": {
-    "username": "liweiong",
-    "last_name": "Ong",
-    "phone": "16506860567",
-    "id": "$010000001bbe580e7f52fe2c69cb9f77",
-    "first_name": "Liwei",
-    "name": "Liwei",
-    "cmd": "$010000001bbe580e7f52fe2c69cb9f77",
-    "when": "2017-04-11 02:49:46",
-    "flags": 524289,
-    "peer_id": 240696859,
-    "type": "user"
-  },
-  "date": 1491903927,
-  "event": "message",
-  "sender": {
-    "username": "liweiong",
-    "last_name": "Ong",
-    "phone": "16506860567",
-    "id": "$010000001bbe580e7f52fe2c69cb9f77",
-    "first_name": "Liwei",
-    "name": "Liwei",
-    "cmd": "$010000001bbe580e7f52fe2c69cb9f77",
-    "when": "2017-04-11 02:49:46",
-    "flags": 524289,
-    "peer_id": 240696859,
-    "type": "user"
-  },
-  "service": false,
-  "id": "010000001bbe580ede930000000000007f52fe2c69cb9f77",
-  "flags": 256,
-  "receiver": {
-    "username": "liweiong",
-    "last_name": "Ong",
-    "phone": "16506860567",
-    "id": "$010000001bbe580e7f52fe2c69cb9f77",
-    "first_name": "Liwei",
-    "name": "Liwei",
-    "cmd": "$010000001bbe580e7f52fe2c69cb9f77",
-    "when": "2017-04-11 02:49:46",
-    "flags": 524289,
-    "peer_id": 240696859,
-    "type": "user"
-  },
-  "unread": false
-}
-"""
 
-class TelegramController(object):
+class TelegramController(TelegramClient):
 
 	def __init__(self, port=3007):
 		self.port = port

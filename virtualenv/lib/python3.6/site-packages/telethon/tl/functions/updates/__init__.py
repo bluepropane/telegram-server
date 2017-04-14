@@ -1,0 +1,3 @@
+from telethon.tl.functions.updates.get_state import GetStateRequest
+from telethon.tl.functions.updates.get_difference import GetDifferenceRequest
+from telethon.tl.functions.updates.get_channel_difference import GetChannelDifferenceRequest
