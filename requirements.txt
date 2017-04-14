@@ -1,2 +1,5 @@
+DictObject==0.1.3
+luckydonald-utils==0.52
 pyaes==1.6.0
+pytg==0.4.10
 Telethon==0.7.1
