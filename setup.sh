@@ -4,6 +4,8 @@
 # setup script to install dependencies and configure environment
 
 
+if [ "$1" != "skip-cli"]; then 
+
 ########### PHASE 1: MAKING THE CLI FOR THE AI TO SEND/RECEIVE MSGS ##########
 git clone --recursive https://github.com/vysheng/tg.git && cd tg
 
@@ -34,6 +36,10 @@ check_libreadline () {
 make
 
 ###############################################################################
+
+else
+	echo "Skipping telegram-cli installation..."
+fi
 
 
 ########### PHASE 2: MAKING THE CLI FOR THE AI TO SEND/RECEIVE MSGS ##########
