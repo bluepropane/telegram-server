@@ -1,102 +1,53 @@
-import socket
-import sys
+"""
+Telegram adapter instance for the AI account. Should be a singleton. 
+"""
+from pytg import Telegram as tg
+from pytg.utils import coroutine
+import json
+import os
 
 
-class TelegramTCPHelper(object):
 
-    TELEGRAM_MTP_ADDR_HOST = {
-        'dev': '149.154.167.40',
-        'prod': '149.154.167.50'
-    }
-    TELEGRAM_MTP_ADDR_PORT = 443
+class Telegram(object):
 
-
-    def __init__(self, host='localhost', port=10000, env='dev'):
-        self.port = port
-        self.host = host
-        self.receiver = None
+    instance = None
+    
+    def __init__(self):
         self.sender = None
-        self.env = env
-        self.observers = []
-        # self._init_server()
-        # self._init_sender()
+        self.receiver = None
+        self.observer = None
+        self._init_telegram()
 
-    def _init_server(self):
-        # Create a TCP/IP socket
-        self.receiver = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-        # Bind the socket to the port
-        print 'starting up %s on %s port %s' % (TelegramTCPHelper.__name__, self.host, self.port)
-        self.receiver.bind((self.host, self.port))
-
-    def _init_sender(self):
-        self.sender = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-        # Connect the socket to the port where the server is listening
-        telegram_mtp_addr = (self.TELEGRAM_MTP_ADDR_HOST[self.env], self.TELEGRAM_MTP_ADDR_PORT)
-        print >>sys.stderr, 'connecting to Telegram MTProto server: %s:%s' % telegram_mtp_addr
-        self.sender.connect((self.host, self.port))
-
-    def listen(self):
+    def _init_telegram(self):
         """
-        Listen for incoming connections
+        Init telegram adapter with the AI's credentials for conversations.
         """
-        if self.receiver is None:
-            self._init_server()
+        print('Connecting to Telegram servers...')
+        self.tg = tg(
+            telegram="tg/bin/telegram-cli",
+            pubkey_file="tg/tg-server.pub")
+        self.receiver = self.tg.receiver
+        self.sender = self.tg.sender
 
-        self.receiver.listen(1)
-
-        try:
-            while True:
-                # Wait for a connection
-                print >>sys.stderr, 'waiting for a connection'
-                connection, client_address = self.receiver.accept()
-                self._on_connection(connection, client_address)
-
-        finally:
-            self.receiver.close()
-
-    def _on_connection(self, connection, client_address):
-        try:
-            print >>sys.stderr, 'connection from', client_address
-
-            # Receive the data in small chunks and retransmit it
-            while True:
-                data = connection.recv(16)
-                print >>sys.stderr, 'received "%s"' % data
-                if data:
-                    print >>sys.stderr, 'sending data back to the client'
-                    connection.sendall(data)
-                else:
-                    print >>sys.stderr, 'no more data from', client_address
-                    break
-                
-        finally:
-            # Clean up the connection
-            connection.close()
-
-    def on_connection(self, callback):
+    def on_message(self, callback):
         """
-        Register observer for callback when message is received
-        @param callback
+        add an observer for message event
+        @param callback: called on message event with arguments (update_object). update_object can be
+                         of type {telethon.tl.types.UpdateShortChatMessage} or
+                                 {telethon.tl.types.UpdateShortMessage}
         """
-        self.observers.append(callback)        
+        self.observer.append(callback)
 
-    def send(self, message='test message'):
-        try:
-            # Send data
-            print >>sys.stderr, 'sending "%s"' % message
-            self.sender.sendall(message)
+    def send(self, usernames, msg):
+        if isinstance(usernames, str):
+            usernames = [usernames]
 
-            # Look for the response
-            amount_received = 0
-            amount_expected = len(message)
-            
-            while amount_received < amount_expected:
-                data = self.sender.recv(16)
-                amount_received += len(data)
-                print >>sys.stderr, 'received "%s"' % data
+        if isinstance(usernames, list):
+            for username in usernames:
+                self.send_message(username, msg)
 
-        finally:
-            print >>sys.stderr, 'closing socket'
-            self.sender.close()
+def get_instance():
+    if Telegram.instance is None:
+        Telegram.instance = Telegram()
+
+    return Telegram.instance
