@@ -7,7 +7,7 @@ from queue import Queue
 import threading
 
 
-class Telegram(object):
+class TelegramAI(object):
 
     instance = None
     
@@ -79,7 +79,7 @@ class Telegram(object):
                 self.send_msg(username, msg)
 
 def get_instance():
-    if Telegram.instance is None:
-        Telegram.instance = Telegram()
+    if TelegramAI.instance is None:
+        TelegramAI.instance = TelegramAI()
 
-    return Telegram.instance
+    return TelegramAI.instance

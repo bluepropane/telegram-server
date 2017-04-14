@@ -46,8 +46,9 @@ class TelegramUserAccount(TelegramClient):
 
     def authorize_code(self, code):
         try:
-            self.sign_in(self.user_phone, code)
-
+            signed_in = self.sign_in(self.user_phone, code)
+            if not signed_in:
+                raise Exception('Sign in failed, please try again.')
         # Two-step verification may be enabled
         except RPCError as e:
             if e.password_required:
@@ -61,4 +62,9 @@ class TelegramUserAccount(TelegramClient):
         result = self.invoke(GetContactsRequest(self.api_hash))
         self.contacts = []
         for user in result.users:
-
+            self.contacts.append({
+                'first_name': user.first_name,    
+                'last_name': user.last_name,    
+                'phone': user.phone,    
+                'id': user.id,    
+            })

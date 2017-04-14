@@ -4,7 +4,7 @@
 # setup script to install dependencies and configure environment
 
 
-if [ "$1" != "skip-cli"]; then 
+if [ "$1" != "skip-cli" ]; then 
 
 ########### PHASE 1: MAKING THE CLI FOR THE AI TO SEND/RECEIVE MSGS ##########
 git clone --recursive https://github.com/vysheng/tg.git && cd tg
@@ -13,7 +13,7 @@ git clone --recursive https://github.com/vysheng/tg.git && cd tg
 brew install libconfig readline lua libevent jansson
 if [ "$?" == "127" ]; then
 	sudo apt-get install libreadline-dev libconfig-dev libssl-dev lua5.2 liblua5.2-dev libevent-dev libjansson-dev libpython-dev
-
+fi
 READLINE_VERSION=`ls /usr/local/Cellar/readline`
 READLINE_VERSION=(${READLINE_VERSION// / })
 READLINE_VERSION=${READLINE_VERSION[0]}
@@ -70,9 +70,11 @@ echo 'Please input Telegram api_id: '
 read -s TG_API_ID 
 echo 'Please input Telegram api_hash: '
 read -s TG_API_HASH
+echo 'Generating folders'
 mkdir creds
 mkdir sessions
-echo '{"api_id": ${TG_API_ID}, "api_hash": "${TG_API_HASH}"}' >> creds/telegram.json
+echo 'Generating credentials file'
+echo "{\"api_id\": ${TG_API_ID}, \"api_hash\": \"${TG_API_HASH}\"}" >> creds/telegram.json
 python3 -m venv virtualenv
 source virtualenv/bin/activate
 pip install -r requirements.txt
