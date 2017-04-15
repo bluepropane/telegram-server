@@ -15,8 +15,10 @@ class TelegramAI(object):
         self.sender = None
         self.receiver = None
         self.observer = None
+        self.phone = None
         self.queue = Queue()
         self._init_telegram()
+        self._load_ai_info()
 
     def _init_telegram(self):
         """
@@ -29,11 +31,19 @@ class TelegramAI(object):
         self.receiver = self.tg.receiver
         self.sender = self.tg.sender
 
+    def _load_ai_info(self):
+        print('Loading bot info...')
+        info = self.sender.whoami()
+        for k, v in info.items():
+            print('-- {}: {}'.format(k, v))
+        self.phone = info['phone']
+
     def _start_receiver(self):
         """
         This is a blocking method; should be run on a separate thread.
         """
         self.receiver.start()
+        print('Started telegram receiver server')
         self.receiver.message(self.receiver_main_loop())
 
     @coroutine
@@ -43,16 +53,18 @@ class TelegramAI(object):
         """
         try:
             while True:
-                msg = (yield) # it waits until it got a message, stored now in msg
-                print("Message: ", msg)
-                # do more stuff here!
+                msg = (yield) # waits until it receives a message
+                if msg.event == 'message':
+                    # we're only interested in text messages (for now)
+                    print("Message: ", msg)
+                    self.queue.put(msg)
 
         except Exception as err:
-            print('Err: %r \n\nShutting down receiver'.format(err))
-            self.receiver.close()
+            print('Err: %r \n\n'.format(err))
         finally:
             print('Shutting down receiver')
-            self.receiver.close()
+            self.receiver.stop()
+            TelegramAI.instance = None
 
     def start_receiver(self):
         """
@@ -61,11 +73,10 @@ class TelegramAI(object):
         receiver_worker = threading.Thread(
             target=self._start_receiver,
             args=(),
-            name='telegram-receiver-process'
+            name='telegram-receiver-thread'
         )
         receiver_worker.setDaemon(True)
         receiver_worker.start()
-        print('Started telegram receiver server')
 
     def on_message(self, callback):
         """
@@ -85,7 +96,41 @@ class TelegramAI(object):
 
         if isinstance(usernames, list):
             for username in usernames:
-                self.send_msg(username, msg)
+                self.sender.send_msg(username, msg)
+
+    def _start_ai(self):
+        """
+        This is a blocking method; should be run on a separate thread.
+        """
+        print('Started telegram sender; waiting for messages from receiver...')
+        try:
+            while True:
+                msg = self.queue.get()
+                print('Picked up message from queue - {}: {}'.format(msg.sender.name, msg.text))
+                self.process_response(msg)
+                self.queue.task_done()
+        except Exception as err:
+            print('Sender worker error: %r'.format(err))
+            print('Restarting telegram sender...')
+            self._start_ai()
+
+    def start_ai(self):
+        """
+        Sender is acting as a worker; processes message from receiver through the queue.
+        """
+        sender_worker = threading.Thread(
+            target=self._start_ai,
+            args=(),
+            name='telegram-sender-worker'
+        )
+        sender_worker.setDaemon(True)
+        sender_worker.start()
+
+    def process_response(self, msg):
+        """
+        AI conversation logic goes here.
+        """
+        self.send('@{}'.format(msg.sender.username), 'Hi there!')
 
 
 def get_instance():
@@ -93,3 +138,11 @@ def get_instance():
         TelegramAI.instance = TelegramAI()
 
     return TelegramAI.instance
+
+
+if __name__ == '__main__':
+    a = get_instance()
+    a.start_receiver()
+    a.start_ai()
+    while True:
+        input()
