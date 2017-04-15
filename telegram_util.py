@@ -38,6 +38,9 @@ class TelegramAI(object):
 
     @coroutine
     def receiver_main_loop(self):
+        """
+        main message callback handler
+        """
         try:
             while True:
                 msg = (yield) # it waits until it got a message, stored now in msg
@@ -52,6 +55,9 @@ class TelegramAI(object):
             self.receiver.close()
 
     def start_receiver(self):
+        """
+        Starts the receiver on a separate thread
+        """
         receiver_worker = threading.Thread(
             target=self._start_receiver,
             args=(),
@@ -71,12 +77,16 @@ class TelegramAI(object):
         self.observer.append(callback)
 
     def send(self, usernames, msg):
+        """
+        Sends a message to the specified username(s)
+        """
         if isinstance(usernames, str):
             usernames = [usernames]
 
         if isinstance(usernames, list):
             for username in usernames:
                 self.send_msg(username, msg)
+
 
 def get_instance():
     if TelegramAI.instance is None:

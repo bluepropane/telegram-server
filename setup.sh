@@ -4,33 +4,39 @@
 # setup script to install dependencies and configure environment
 
 
-if [ "$1" != "skip-cli" ]; then 
-
-########### PHASE 1: MAKING THE CLI FOR THE AI TO SEND/RECEIVE MSGS ##########
-git clone --recursive https://github.com/vysheng/tg.git && cd tg
-
-# READLINE_BASE_DIR=/usr/local/opt/readline
-brew install libconfig readline lua libevent jansson
-if [ "$?" == "127" ]; then
-	sudo apt-get install libreadline-dev libconfig-dev libssl-dev lua5.2 liblua5.2-dev libevent-dev libjansson-dev libpython-dev
-fi
-READLINE_VERSION=`ls /usr/local/Cellar/readline`
-READLINE_VERSION=(${READLINE_VERSION// / })
-READLINE_VERSION=${READLINE_VERSION[0]}
-READLINE_BASE_DIR=/usr/local/Cellar/readline/${READLINE_VERSION}
-
-export CFLAGS="-I/usr/local/include -I${READLINE_BASE_DIR}/include"
-export LDFLAGS="-L/usr/local/lib -L${READLINE_BASE_DIR}/lib -L/usr/local/opt/openssl/lib"
-export CPPFLAGS="-I/usr/local/opt/openssl/include"
+stringContains () { [ -z "${2##*$1*}" ]; }
 
 check_libreadline () {
 	# fix for a very specific type of error
 	ls /usr/local/opt/readline/lib/libreadline.6.dylib
-	if [ "$?" == "1" ]; then		
-		rm -rf /usr/local/opt/readline
+	if [ "$?" == "1" ]; then		readline
+		rm -rf /usr/local/opt/
 		ln -s ${READLINE_BASE_DIR} /usr/local/opt/readline
 	fi
 }
+
+if [ "$1" != "skip-cli" ]; then 
+
+########### PHASE 1: MAKING THE CLI FOR THE AI TO SEND/RECEIVE MSGS ##########
+git clone --recursive https://github.com/vysheng/tg.git
+cd tg
+
+sudo apt-get install libreadline-dev libconfig-dev libssl-dev lua5.2 liblua5.2-dev libevent-dev libjansson-dev libpython-dev
+if [ "$?" != "0" ] && stringContains "Darwin" `uname -s` ; then
+	# pretty safe to say that we're on an OSX, so do all the OSX thingy
+	# if we're not then too bad, but no harm
+	brew install libconfig readline lua libevent jansson
+	READLINE_VERSION=`ls /usr/local/Cellar/readline`
+	READLINE_VERSION=(${READLINE_VERSION// / })
+	READLINE_VERSION=${READLINE_VERSION[@]:(-1)}
+	READLINE_BASE_DIR=/usr/local/Cellar/readline/${READLINE_VERSION}
+
+	export CFLAGS="-I/usr/local/include -I${READLINE_BASE_DIR}/include"
+	export LDFLAGS="-L/usr/local/lib -L${READLINE_BASE_DIR}/lib -L/usr/local/opt/openssl/lib"
+	export CPPFLAGS="-I/usr/local/opt/openssl/include"
+else
+	echo "Not on mac/darwin but no apt-get"
+fi
 
 ./configure
 make
@@ -42,8 +48,9 @@ else
 fi
 
 
+if [ "$1" != "skip-python" ]; then 
+
 ########### PHASE 2: MAKING THE CLI FOR THE AI TO SEND/RECEIVE MSGS ##########
-stringContains () { [ -z "${2##*$1*}" ]; }
 
 # check if we have python3 installed first
 REQUIRED_PYTHON3_VERSION=3.6
@@ -80,3 +87,8 @@ source virtualenv/bin/activate
 pip install -r requirements.txt
 
 ###############################################################################
+
+else
+	echo "Skipping python requirements installation..."
+fi
+

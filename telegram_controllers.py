@@ -6,6 +6,10 @@ import re
 class TelegramController(object):
 
     def get(self, request_params):
+        """
+        Endpoint called for retrieving the telegram contacts of the specified phone number. The phone number has
+        to be logged in first for this endpoint to work.
+        """
         phone_number = self._sanitize_phone_number(request_params.get('phone')[0])
         telegram_user = TelegramUserAccount(phone_number, user_phone=phone_number)
         if not telegram_user.is_user_authorized():
@@ -54,16 +58,3 @@ class TelegramController(object):
             raise Exception('Invalid phone number')
 
         return number
-
-
-if __name__ == '__main__':
-    a =TelegramController('16506860567')
-    print('yo', a.receiver)
-
-    def on_message(msg_object):
-        print('receivd message! {}'.format(msg_object))
-        if hasattr(msg_object, 'user_id') and hasattr(msg_object, 'message'):
-            print("{}: {}".format(msg_object.user_id, msg_object.message))
-
-    a.on_message(on_message)
-    a.send('@liweiong', 'hi')
