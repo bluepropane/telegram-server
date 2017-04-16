@@ -22,7 +22,7 @@ git clone --recursive https://github.com/vysheng/tg.git
 cd tg
 
 sudo apt-get install libreadline-dev libconfig-dev libssl-dev lua5.2 liblua5.2-dev libevent-dev libjansson-dev libpython-dev
-if [ "$?" != "0" ] && stringContains "Darwin" `uname -s` ; then
+if [ "$?" != "0" ] && stringContains "Darwin" `uname` ; then
 	# pretty safe to say that we're on an OSX, so do all the OSX thingy
 	# if we're not then too bad, but no harm
 	brew install libconfig readline lua libevent jansson libgcrypt
@@ -54,14 +54,14 @@ if [ "$1" != "skip-python" ]; then
 ########### PHASE 2: MAKING THE CLI FOR THE AI TO SEND/RECEIVE MSGS ##########
 
 # check if we have python3 installed first
-REQUIRED_PYTHON3_VERSION=3.6
+REQUIRED_PYTHON3_VERSION=3
 PYTHON3_VERSION=`python3 --version`
 if [ "$?" == "127" ] || ! stringContains "${REQUIRED_PYTHON3_VERSION}" "${PYTHON3_VERSION}" ; then
 	# no py3
 	echo "Could not locate Python ${REQUIRED_PYTHON3_VERSION}"
 	echo "Python >= ${REQUIRED_PYTHON3_VERSION} has to be installed to proceed. Install Python ${REQUIRED_PYTHON3_VERSION} on this machine? (y/n):"
 	read INSTALL_PYTHON
-	if [ "${INSTALL_PYTHON}" == "yes" ]; then
+	if [ "${INSTALL_PYTHON}" == "y" ]; then
 		# install py3 - currently only linux or OSX path...
 		sudo apt-get install python${REQUIRED_PYTHON3_VERSION}
 		if [ "$?" == "127" ]; then
@@ -84,6 +84,12 @@ mkdir sessions
 echo 'Generating credentials file'
 echo "{\"api_id\": ${TG_API_ID}, \"api_hash\": \"${TG_API_HASH}\"}" >> creds/telegram.json
 python3 -m venv virtualenv
+if [ "$?" != "0" ] && stringContains "Linux" `uname` ; then
+	rm -rf virtualenv
+	sudo apt-get install python3-venv
+	python3 -m venv virtualenv
+fi
+
 source virtualenv/bin/activate
 pip install -r requirements.txt
 
