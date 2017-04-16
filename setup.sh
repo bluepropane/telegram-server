@@ -25,20 +25,21 @@ sudo apt-get install libreadline-dev libconfig-dev libssl-dev lua5.2 liblua5.2-d
 if [ "$?" != "0" ] && stringContains "Darwin" `uname -s` ; then
 	# pretty safe to say that we're on an OSX, so do all the OSX thingy
 	# if we're not then too bad, but no harm
-	brew install libconfig readline lua libevent jansson
+	brew install libconfig readline lua libevent jansson libgcrypt
+
 	READLINE_VERSION=`ls /usr/local/Cellar/readline`
 	READLINE_VERSION=(${READLINE_VERSION// / })
 	READLINE_VERSION=${READLINE_VERSION[@]:(-1)}
 	READLINE_BASE_DIR=/usr/local/Cellar/readline/${READLINE_VERSION}
 
 	export CFLAGS="-I/usr/local/include -I${READLINE_BASE_DIR}/include"
-	export LDFLAGS="-L/usr/local/lib -L${READLINE_BASE_DIR}/lib -L/usr/local/opt/openssl/lib"
-	export CPPFLAGS="-I/usr/local/opt/openssl/include"
+	export LDFLAGS="-L/usr/local/lib -L${READLINE_BASE_DIR}/lib"
 else
 	echo "Not on mac/darwin but no apt-get"
 fi
 
 ./configure
+sed -i '' 's/ -Werror / /' Makefile
 make
 
 ###############################################################################

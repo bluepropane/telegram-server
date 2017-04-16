@@ -1,10 +1,11 @@
 """
 Telegram adapter instance for the AI account. Should be a singleton. 
 """
-from pytg import Telegram as tg
+from pytg import Telegram
 from pytg.utils import coroutine
 from queue import Queue
 import threading
+import db
 
 
 class TelegramAI(object):
@@ -25,18 +26,21 @@ class TelegramAI(object):
         Init telegram adapter with the AI's credentials for conversations.
         """
         print('Connecting to Telegram servers...')
-        self.tg = tg(
+        self.tg = Telegram(
             telegram="tg/bin/telegram-cli",
-            pubkey_file="tg/tg-server.pub")
+            pubkey_file="tg/tg-server.pub",
+            port=4460)
         self.receiver = self.tg.receiver
         self.sender = self.tg.sender
+        self.sender.default_answer_timeout = 5.0
 
     def _load_ai_info(self):
         print('Loading bot info...')
         info = self.sender.whoami()
         for k, v in info.items():
             print('-- {}: {}'.format(k, v))
-        self.phone = info['phone']
+        if 'error' not in info:
+            self.phone = info['phone']
 
     def _start_receiver(self):
         """
@@ -44,17 +48,17 @@ class TelegramAI(object):
         """
         self.receiver.start()
         print('Started telegram receiver server')
-        self.receiver.message(self.receiver_main_loop())
+        self.receiver.message(self._receiver_main_loop())
 
     @coroutine
-    def receiver_main_loop(self):
+    def _receiver_main_loop(self):
         """
         main message callback handler
         """
         try:
             while True:
                 msg = (yield) # waits until it receives a message
-                if msg.event == 'message':
+                if msg.event == 'message' and not msg.own:
                     # we're only interested in text messages (for now)
                     print("Message: ", msg)
                     self.queue.put(msg)
@@ -130,6 +134,9 @@ class TelegramAI(object):
         """
         AI conversation logic goes here.
         """
+        # db.insert_one('chat_history', {
+            
+        # })
         self.send('@{}'.format(msg.sender.username), 'Hi there!')
 
 
