@@ -42,8 +42,8 @@ def telegram():
         return 'Internal Server Error.'
 
 
-def main():
-    run(server='tornado', host='localhost', port=80)
+def main(port=8080):
+    run(server='tornado', host='localhost', port=port)
 
 
 if __name__ == '__main__':
