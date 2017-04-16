@@ -67,6 +67,7 @@ if [ "$?" == "127" ] || ! stringContains "${REQUIRED_PYTHON3_VERSION}" "${PYTHON
 		if [ "$?" == "127" ]; then
 			brew install python3
 		fi
+		sudo apt install python3-pip
 	else
 		echo 'Aborting setup'
 		exit 1
@@ -80,14 +81,17 @@ echo 'Please input Telegram api_hash: '
 read -s TG_API_HASH
 echo 'Generating folders'
 mkdir creds
+rm creds/telegram.json
 mkdir sessions
 echo 'Generating credentials file'
 echo "{\"api_id\": ${TG_API_ID}, \"api_hash\": \"${TG_API_HASH}\"}" >> creds/telegram.json
 python3 -m venv virtualenv
 if [ "$?" != "0" ] && stringContains "Linux" `uname` ; then
+	# Linux/Ubuntu issues
+	export LC_CTYPE=en_US.utf8
 	rm -rf virtualenv
-	sudo apt-get install python3-venv
-	python3 -m venv virtualenv
+	pip3 install virtualenv
+	virtualenv virtualenv
 fi
 
 source virtualenv/bin/activate

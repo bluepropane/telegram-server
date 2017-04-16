@@ -43,7 +43,7 @@ def telegram():
 
 
 def main():
-    run(server='tornado', host='localhost', port=8080)
+    run(server='tornado', host='localhost', port=80)
 
 
 if __name__ == '__main__':
