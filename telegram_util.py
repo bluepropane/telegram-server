@@ -137,7 +137,7 @@ class TelegramAI(object):
         # db.insert_one('chat_history', {
             
         # })
-        self.send('@{}'.format(msg.sender.username), 'Hi there!')
+        self.send('@{}'.format(msg.sender.username), 'Hi there {}!'.format(msg.sender.first_name))
 
 
 def get_instance():

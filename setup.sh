@@ -67,11 +67,15 @@ if [ "$?" == "127" ] || ! stringContains "${REQUIRED_PYTHON3_VERSION}" "${PYTHON
 		if [ "$?" == "127" ]; then
 			brew install python3
 		fi
-		sudo apt install python3-pip
 	else
 		echo 'Aborting setup'
 		exit 1
 	fi
+fi
+
+pip3 --version
+if [ "$?" != "0" ]; then
+	sudo apt install python3-pip
 fi
 
 echo 'Initializing setup...'
@@ -90,7 +94,7 @@ if [ "$?" != "0" ] && stringContains "Linux" `uname` ; then
 	# Linux/Ubuntu issues
 	export LC_CTYPE=en_US.utf8
 	rm -rf virtualenv
-	pip3 install virtualenv
+	pip3 install virtualenv	
 	virtualenv virtualenv
 fi
 

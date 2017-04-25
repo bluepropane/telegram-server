@@ -5,7 +5,7 @@ import re
 
 class TelegramController(object):
 
-    def get(self, request_params):
+    def get(self, request_params, response):
         """
         Endpoint called for retrieving the telegram contacts of the specified phone number. The phone number has
         to be logged in first for this endpoint to work.
@@ -21,14 +21,14 @@ class TelegramController(object):
 
         return {'contacts': telegram_user.contacts}
 
-    def post(self, request_params):
+    def post(self, request_params, response):
         """
         This endpoint is called for initiating the authorization flow.
         @param request_params: should contain an 'type' paramter. 'onboard' is for
                 the initialization of the flow, while 'code' is for verifying the authorization code.
         """
-        phone_number = self._sanitize_phone_number(request_params.get('phone'))
-        auth_type = request_params.get('type')
+        phone_number = self._sanitize_phone_number(request_params.get('phone')[0])
+        auth_type = request_params.get('type')[0]
         telegram_user = TelegramUserAccount(phone_number, user_phone=phone_number)
         result = {}
         if not telegram_user.is_user_authorized():
@@ -39,6 +39,8 @@ class TelegramController(object):
             elif auth_type == 'code':
                 telegram_user.phone_code_hashes['+' + phone_number] = request_params.get('identifier')
                 telegram_user.authorize_code(request_params.get('code'))
+        else:
+            response.status = 208
 
         return result
 
@@ -51,10 +53,10 @@ class TelegramController(object):
         if isinstance(number, int):
             number = str(number)
         elif not isinstance(number, str):
-            raise Exception('Invalid phone number')
+            raise Exception('Invalid phone number: not a str')
         if number[0] == '+':
             number = number[1:]
         if re.match(r'^[0-9]+$', number) is None:
-            raise Exception('Invalid phone number')
+            raise Exception('Invalid phone number: must be 0-9')
 
         return number

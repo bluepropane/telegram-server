@@ -28,14 +28,16 @@ def telegram():
         for field_type in ['query', 'forms']:
             field = getattr(request, field_type)
             if field:
+                print('%s: %s' % (field_type, field.dict))
                 request_params.update(field.dict)
 
         if request.json:
+            print('json: %s' % request.json)
             request_params.update(request.json)
 
         print(request_params)
         func = getattr(TelegramController(), request.method.lower())
-        return func(request_params)
+        return func(request_params, response)
     except Exception as err:
         print('%r' % err)
         response.status = 500
