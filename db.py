@@ -18,6 +18,8 @@ def cleanup():
         connection.close()
         print('Closed connection to db')
 
+atexit.register(cleanup)
+
 def read(sql, params=None):
     """
     DB read operations. fetchone() will be used if 'LIMIT 1' is present in the query. 
