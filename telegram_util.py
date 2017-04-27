@@ -1,5 +1,5 @@
 """
-Telegram adapter instance for the AI account. Should be a singleton. 
+Telegram adapter for the AI account. Singleton instance. 
 """
 from pytg import Telegram
 from pytg.utils import coroutine
@@ -114,7 +114,7 @@ class TelegramAI(object):
                 self.process_response(msg)
                 self.queue.task_done()
         except Exception as err:
-            print('Sender worker error: %r'.format(err))
+            print('Sender worker error: %r' % err)
             print('Restarting telegram sender...')
             self._start_ai()
 
@@ -133,11 +133,20 @@ class TelegramAI(object):
     def process_response(self, msg):
         """
         AI conversation logic goes here.
+        @param msg: Message object. sender details are stored
+                    in msg.sender, while receiver details (the bot) are stored in msg.receiver.
+                    Message text content (from the sender) is stored in msg.text
+                    See below for an example.
         """
         # db.insert_one('chat_history', {
             
         # })
-        self.send('@{}'.format(msg.sender.username), 'Hi there {}!'.format(msg.sender.first_name))
+        if msg.text.lower() == 'hi':
+            response_message = 'Hi there {.first_name}!'.format(msg.sender)
+        else:
+            response_message = 'Sorry, I didn\'t quite get what you mean.'
+
+        self.send('@{}'.format(msg.sender.username), response_message)
 
 
 def get_instance():
