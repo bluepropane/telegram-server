@@ -1,18 +1,43 @@
-from bottle import run, route, request, response
+from bottle import Bottle, request, response
 from telegram_controllers import TelegramController
+import logging
 
 
-def get_params():
-    """
-    Parse the request params and context params from bottle request object and return two dictionaries
-    """
+LOGGER = logging.getLogger(__name__)
 
-@route('/', method=['GET'],)
+# set up the logger
+LOGGER.setLevel(logging.INFO)
+file_handler = logging.FileHandler('log/main-process.log')
+file_handler.setLevel(logging.DEBUG)
+LOGGER.addHandler(file_handler)
+
+def log_to_logger(fn):
+    '''
+    Wrap a Bottle request so that a log line is emitted after it's handled.
+    (This decorator can be extended to take the desired logger as a param.)
+    '''
+    @wraps(fn)
+    def _log_to_logger(*args, **kwargs):
+        request_time = datetime.now()
+        actual_response = fn(*args, **kwargs)
+        # modify this to log exactly what you need:
+        LOGGER.info('%s %s %s %s %s' % (request.remote_addr,
+                                        request_time,
+                                        request.method,
+                                        request.url,
+                                        response.status))
+        return actual_response
+    return _log_to_logger
+
+app = Bottle()
+app.install(log_to_logger)
+
+@app.route('/', method=['GET'],)
 def health():
     return 'healthy'
 
 
-@route('/telegram', method=['GET', 'POST'])
+@app.route('/telegram', method=['GET', 'POST'])
 def telegram():
     # print('Called {method} {url} with data = {form}, query = {query}, params = {params}'.format({
     #   'method': request.method,
@@ -45,7 +70,7 @@ def telegram():
 
 
 def main(port=8080):
-    run(server='tornado', host='localhost', port=port)
+    app.run(server='tornado', host='localhost', port=port)
 
 
 if __name__ == '__main__':
