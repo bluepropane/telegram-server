@@ -3,3 +3,4 @@ tg/*
 creds/*
 virtualenv/*
 *.session
+log/*
