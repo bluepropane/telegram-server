@@ -38,9 +38,9 @@ class TelegramController(object):
             if auth_type == 'onboard':
                 LOGGER.error('Sending telegram verification code to {}'.format('+' + phone_number))
                 telegram_user.send_code_request(phone_number)
-                result = {"identifier": telegram_user.phone_code_hashes['+' + phone_number]}
+                result = {"identifier": telegram_user.phone_code_hashes[phone_number]}
             elif auth_type == 'code':
-                telegram_user.phone_code_hashes['+' + phone_number] = request_params.get('identifier')
+                telegram_user.phone_code_hashes[phone_number] = request_params.get('identifier')
                 telegram_user.authorize_code(request_params.get('code'))
         else:
             response.status = 208
