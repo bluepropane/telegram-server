@@ -3,7 +3,7 @@ from telegram_controllers import TelegramController
 import telegram_util
 import logging
 
-logging.basicConfig(filename='log/access-error.log',level=logging.ERROR)
+logging.basicConfig(filename='log/access-error.log',level=logging.INFO)
 LOGGER = logging.getLogger(__name__)
 
 
@@ -45,7 +45,7 @@ def telegram():
         func = getattr(TelegramController(), request.method.lower())
         return func(request_params, response)
     except Exception as err:
-        print('%r' % err)
+        LOGGER.error('%r' % err)
         response.status = 500
         return 'Internal Server Error.'
 

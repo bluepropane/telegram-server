@@ -2,8 +2,9 @@ from telethon import TelegramClient, RPCError
 from telethon.tl.functions.contacts.get_contacts import GetContactsRequest
 import json
 import os
+import logging
 
-
+LOGGER = logging.getLogger(__name__)
 config = json.load(open('creds/telegram.json'))
 
 
@@ -28,20 +29,20 @@ class TelegramUserAccount(TelegramClient):
         # so it can be downloaded if the user wants
         # self.found_media = set()
 
-        print('Connecting to Telegram servers...')
+        LOGGER.info('Connecting to Telegram servers...')
         self.connect()
-        print(self.is_user_authorized())
+        LOGGER.info(self.is_user_authorized())
 
     def authorize(self):
         """
         ensure we're authorized and have access
         """
         if not self.is_user_authorized():
-            print('First run. Sending code request...')
+            LOGGER.info('First run. Sending code request...')
             self.send_code_request(self.user_phone)
             return False
         else:
-            print('User is already authorized. Proceeding...')
+            LOGGER.info('User is already authorized. Proceeding...')
             return True
 
     def authorize_code(self, code):

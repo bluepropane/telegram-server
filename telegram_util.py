@@ -6,6 +6,9 @@ from pytg.utils import coroutine
 from queue import Queue
 import threading
 import db
+import logging
+
+LOGGER = logging.getLogger(__name__)
 
 
 class TelegramAI(object):
@@ -25,7 +28,7 @@ class TelegramAI(object):
         """
         Init telegram adapter with the AI's credentials for conversations.
         """
-        print('Connecting to Telegram servers...')
+        LOGGER.info('Connecting to Telegram servers...')
         self.tg = Telegram(
             telegram="tg/bin/telegram-cli",
             pubkey_file="tg/tg-server.pub",
@@ -35,10 +38,10 @@ class TelegramAI(object):
         self.sender.default_answer_timeout = 5.0
 
     def _load_ai_info(self):
-        print('Loading bot info...')
+        LOGGER.info('Loading bot info...')
         info = self.sender.whoami()
         for k, v in info.items():
-            print('-- {}: {}'.format(k, v))
+            LOGGER.info('-- {}: {}'.format(k, v))
         if 'error' not in info:
             self.phone = info['phone']
 
@@ -47,7 +50,7 @@ class TelegramAI(object):
         This is a blocking method; should be run on a separate thread.
         """
         self.receiver.start()
-        print('Started telegram receiver server')
+        LOGGER.info('Started telegram receiver server')
         self.receiver.message(self._receiver_main_loop())
 
     @coroutine
@@ -60,13 +63,13 @@ class TelegramAI(object):
                 msg = (yield) # waits until it receives a message
                 if msg.event == 'message' and not msg.own:
                     # we're only interested in text messages (for now)
-                    print("Message: ", msg)
+                    LOGGER.info("Message: ", msg)
                     self.queue.put(msg)
 
         except Exception as err:
-            print('Err: %r \n\n'.format(err))
+            LOGGER.error('Err: %r \n\n'.format(err))
         finally:
-            print('Shutting down receiver')
+            LOGGER.info('Shutting down receiver')
             self.receiver.stop()
             TelegramAI.instance = None
 
@@ -106,16 +109,16 @@ class TelegramAI(object):
         """
         This is a blocking method; should be run on a separate thread.
         """
-        print('Started telegram sender; waiting for messages from receiver...')
+        LOGGER.info('Started telegram sender; waiting for messages from receiver...')
         try:
             while True:
                 msg = self.queue.get()
-                print('Picked up message from queue - {}: {}'.format(msg.sender.name, msg.text))
+                LOGGER.info('Picked up message from queue - {}: {}'.format(msg.sender.name, msg.text))
                 self.process_response(msg)
                 self.queue.task_done()
         except Exception as err:
-            print('Sender worker error: %r' % err)
-            print('Restarting telegram sender...')
+            LOGGER.error('Sender worker error: %r' % err)
+            LOGGER.info('Restarting telegram sender...')
             self._start_ai()
 
     def start_ai(self):
