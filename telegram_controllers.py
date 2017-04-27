@@ -1,6 +1,9 @@
 from telegram_models import TelegramUserAccount
 import telegram_util
 import re
+import logging
+
+LOGGER = logging.getLogger(__name__)
 
 
 class TelegramController(object):
@@ -13,10 +16,10 @@ class TelegramController(object):
         phone_number = self._sanitize_phone_number(request_params.get('phone')[0])
         telegram_user = TelegramUserAccount(phone_number, user_phone=phone_number)
         if not telegram_user.is_user_authorized():
-            print('Telegram user unauthorized.')
+            LOGGER.error('Telegram user unauthorized.')
             raise Exception('Telegram user unauthorized.')
         else:
-            print('Telegram user authorized, fetching contacts...')
+            LOGGER.error('Telegram user authorized, fetching contacts...')
             telegram_user.get_contacts()
 
         return {'contacts': telegram_user.contacts}
@@ -33,7 +36,7 @@ class TelegramController(object):
         result = {}
         if not telegram_user.is_user_authorized():
             if auth_type == 'onboard':
-                print('Sending telegram verification code to {}'.format('+' + phone_number))
+                LOGGER.error('Sending telegram verification code to {}'.format('+' + phone_number))
                 telegram_user.send_code_request(phone_number)
                 result = {"identifier": telegram_user.phone_code_hashes['+' + phone_number]}
             elif auth_type == 'code':
