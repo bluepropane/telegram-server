@@ -18,6 +18,8 @@ def cleanup():
         connection.close()
         print('Closed connection to db')
 
+atexit.register(cleanup)
+
 def read(sql, params=None):
     """
     DB read operations. fetchone() will be used if 'LIMIT 1' is present in the query. 
@@ -63,7 +65,7 @@ def insert_one(table_name, column_pairs):
     """
     Basic helper function to insert a new row into db.
     @param {str} table_name: name of table to insert into. WARNING: unsafe operation: should not
-            be arbitrary input.
+            be arbitrary user input.
     @param {dict} column_pairs: a key-value pair representing the columns and their
             corresponding values in a row. WARNING: keys should not be arbitrary input, only values.
     """
