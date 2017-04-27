@@ -1,6 +1,11 @@
 from bottle import Bottle, request, response
 from telegram_controllers import TelegramController
+import telegram_util
 
+
+telegram_ai = telegram_util.get_instance()
+telegram_ai.start_receiver()
+telegram_ai.start_ai()
 
 app = Bottle()
 
