@@ -3,7 +3,7 @@ from telegram_controllers import TelegramController
 import telegram_util
 import logging
 
-logging.basicConfig(filename='example.log',level=logging.DEBUG)
+logging.basicConfig(filename='log/access-error.log',level=logging.DEBUG)
 LOGGER = logging.getLogger(__name__)
 
 
