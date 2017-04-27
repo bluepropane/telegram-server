@@ -144,7 +144,7 @@ class TelegramAI(object):
         if msg.text.lower() == 'hi':
             response_message = 'Hi there {.first_name}!'.format(msg.sender)
         else:
-            response_message = 'Sorry, I didn\'t quite get what you mean.'
+            response_message = 'Sorry, I didn\'t quite get you.'
 
         self.send('@{}'.format(msg.sender.username), response_message)
 
