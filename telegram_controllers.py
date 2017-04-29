@@ -1,4 +1,8 @@
+"""
+Telegram controller
+"""
 from telegram_models import TelegramUserAccount
+from phone_util import sanitize_phone_number
 import telegram_util
 import re
 import logging
@@ -13,13 +17,13 @@ class TelegramController(object):
         Endpoint called for retrieving the telegram contacts of the specified phone number. The phone number has
         to be logged in first for this endpoint to work.
         """
-        phone_number = self._sanitize_phone_number(request_params.get('phone')[0])
+        phone_number = sanitize_phone_number(request_params.get('phone')[0])
         telegram_user = TelegramUserAccount(phone_number, user_phone=phone_number)
         if not telegram_user.is_user_authorized():
             LOGGER.error('Telegram user unauthorized.')
             raise Exception('Telegram user unauthorized.')
         else:
-            LOGGER.error('Telegram user authorized, fetching contacts...')
+            LOGGER.info('Telegram user authorized, fetching contacts...')
             telegram_user.get_contacts()
 
         return {'contacts': telegram_user.contacts}
@@ -30,38 +34,24 @@ class TelegramController(object):
         @param request_params: should contain an 'type' paramter. 'onboard' is for
                 the initialization of the flow, while 'code' is for verifying the authorization code.
         """
-        phone_number = self._sanitize_phone_number(request_params.get('phone')[0])
+        phone_number = sanitize_phone_number(request_params.get('phone')[0])
         auth_type = request_params.get('type')[0]
         telegram_user = TelegramUserAccount(phone_number, user_phone=phone_number)
         result = {}
         if not telegram_user.is_user_authorized():
             if auth_type == 'onboard':
-                LOGGER.error('Sending telegram verification code to {}'.format('+' + phone_number))
+                LOGGER.info('Sending telegram verification code to {}'.format('+' + phone_number))
                 telegram_user.send_code_request(phone_number)
                 result = {"identifier": telegram_user.phone_code_hashes[phone_number]}
                 LOGGER.info(telegram_user.phone_code_hashes)
             elif auth_type == 'code':
-                telegram_user.phone_code_hashes[phone_number] = request_params.get('identifier')[0]
-                LOGGER.info(telegram_user.phone_code_hashes)
-                telegram_user.authorize_code(request_params.get('code'))
+                code = request_params.get('code')
+                identifier = request_params.get('identifier')[0]
+                LOGGER.info('Authorizing telegram phone with hash {} and code {}'
+                    .format(telegram_user.phone_code_hashes[phone_number], code))
+                telegram_user.phone_code_hashes[phone_number] = identifier
+                telegram_user.authorize_code(code)
         else:
             response.status = 208
 
         return result
-
-    @staticmethod
-    def _sanitize_phone_number(number):
-        """
-        Take away the leading '+' for standardization. Just add it back if needed.
-        @param number: phone number
-        """
-        if isinstance(number, int):
-            number = str(number)
-        elif not isinstance(number, str):
-            raise Exception('Invalid phone number: not a str')
-        if number[0] == '+':
-            number = number[1:]
-        if re.match(r'^[0-9]+$', number) is None:
-            raise Exception('Invalid phone number: must be 0-9')
-
-        return number

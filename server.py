@@ -1,15 +1,19 @@
 from bottle import Bottle, request, response
 from telegram_controllers import TelegramController
+from event_controllers import EventController
 import telegram_util
 import logging
 
 logging.basicConfig(filename='log/access-error.log',level=logging.INFO)
 LOGGER = logging.getLogger(__name__)
 
+SERVICES = {
+    'telegram': TelegramController,
+    'event': EventController
+}
 
-telegram_ai = telegram_util.get_instance()
-telegram_ai.start_receiver()
-telegram_ai.start_ai()
+# call it once here to load it up
+telegram_util.get_instance()
 
 app = Bottle()
 
@@ -18,8 +22,8 @@ def health():
     return 'healthy'
 
 
-@app.route('/telegram', method=['GET', 'POST'])
-def telegram():
+@app.route('/<service>', method=['GET', 'POST'])
+def service_handler(service):
     # print('Called {method} {url} with data = {form}, query = {query}, params = {params}'.format({
     #   'method': request.method,
     #   'url': request.url,
@@ -42,7 +46,8 @@ def telegram():
             request_params.update(request.json)
 
         print(request_params)
-        func = getattr(TelegramController(), request.method.lower())
+        service = SERVICES[service]
+        func = getattr(service(), request.method.lower())
         return func(request_params, response)
     except Exception as err:
         LOGGER.error('%r' % err)

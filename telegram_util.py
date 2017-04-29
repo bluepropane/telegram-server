@@ -23,6 +23,8 @@ class TelegramAI(object):
         self.queue = Queue()
         self._init_telegram()
         self._load_ai_info()
+        self.start_receiver()
+        self.start_ai()
 
     def _init_telegram(self):
         """
@@ -161,7 +163,5 @@ def get_instance():
 
 if __name__ == '__main__':
     a = get_instance()
-    a.start_receiver()
-    a.start_ai()
     while True:
         input()
