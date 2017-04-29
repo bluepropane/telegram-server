@@ -1,5 +1,4 @@
 import telegram_util
-import re
 import logging
 from phone_util import sanitize_phone_number
 from event_models import Event

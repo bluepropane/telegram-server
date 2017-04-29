@@ -4,7 +4,6 @@ Telegram controller
 from telegram_models import TelegramUserAccount
 from phone_util import sanitize_phone_number
 import telegram_util
-import re
 import logging
 
 LOGGER = logging.getLogger(__name__)

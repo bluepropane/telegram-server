@@ -1,7 +1,7 @@
 """
 Helpful phone related functions.
 """
-
+import re
 
 def sanitize_phone_number(number):
     """

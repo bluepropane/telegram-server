@@ -48,12 +48,16 @@ def service_handler(service):
         print(request_params)
         service = SERVICES[service]
         func = getattr(service(), request.method.lower())
-        return func(request_params, response)
+        res = func(request_params, response)
     except Exception as err:
-        print(err)
-        LOGGER.error('%r' % err)
+        err_message = 'service_handler error: %r' % err
+        print(err_message)
+        LOGGER.error(err_message)
         response.status = 500
-        return 'Internal Server Error.'
+        res = 'Internal Server Error.'
+        raise Exception(err)
+    finally:
+        return res
 
 
 def main(port=8080):
