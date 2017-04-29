@@ -50,6 +50,7 @@ def service_handler(service):
         func = getattr(service(), request.method.lower())
         return func(request_params, response)
     except Exception as err:
+        print(err)
         LOGGER.error('%r' % err)
         response.status = 500
         return 'Internal Server Error.'
