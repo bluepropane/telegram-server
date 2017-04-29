@@ -153,6 +153,13 @@ class TelegramAI(object):
 
         self.send('@{}'.format(msg.sender.username), response_message)
 
+    def add_contact(self, phone, first_name, last_name=''):
+        """
+        Adds a contact. Contact must be added before the ai can start a conversation.
+        """
+        self.sender.contact_add(phone, first_name, last_name)
+
+
 
 def get_instance():
     if TelegramAI.instance is None:
