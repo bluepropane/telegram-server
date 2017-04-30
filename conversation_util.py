@@ -1,6 +1,6 @@
 import db
 
-def process_response(self, msg):
+def process_response(msg):
     """
     AI conversation logic goes here.
     @param msg: Message object. sender details are stored
@@ -8,9 +8,9 @@ def process_response(self, msg):
                 Message text content (from the sender) is stored in msg.text
                 See below for an example.
     """
-    # db.insert_one('chat_history', {
-        
-    # })
+    db.insert_one('chat_history', {
+        'text': msg.sender.text
+    })
     if msg.text.lower() == 'hi':
         response_message = 'Hi there {.first_name}!'.format(msg.sender)
     else:
