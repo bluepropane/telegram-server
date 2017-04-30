@@ -67,5 +67,5 @@ class TelegramUserAccount(TelegramClient):
                 'first_name': user.first_name,    
                 'last_name': user.last_name,    
                 'phone': user.phone,    
-                'id': user.id,    
+                'id': user.id
             })

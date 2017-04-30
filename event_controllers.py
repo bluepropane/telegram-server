@@ -19,8 +19,7 @@ class EventController(object):
         This endpoint is called for initiating the telegram bot message flow.
         @param request_params: should contain 'recipients', an array of name and phone numbers
         """
-        phone_number = sanitize_phone_number(request_params.get('phone')[0])
         event = Event(request_params.get('id'))
         event.start_conversations()
 
-        return result
+        return {}

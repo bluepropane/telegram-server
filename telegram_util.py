@@ -4,6 +4,7 @@ Telegram adapter for the AI account. Singleton instance.
 from pytg import Telegram
 from pytg.utils import coroutine
 from queue import Queue
+import conversation_util
 import threading
 import db
 import logging
@@ -18,7 +19,7 @@ class TelegramAI(object):
     def __init__(self):
         self.sender = None
         self.receiver = None
-        self.observer = None
+        self.observers = []
         self.phone = None
         self.queue = Queue()
         self._init_telegram()
@@ -105,6 +106,8 @@ class TelegramAI(object):
 
         if isinstance(usernames, list):
             for username in usernames:
+                if username[0] != '@':
+                    username = '@' + username
                 self.sender.send_msg(username, msg)
 
     def _start_ai(self):
@@ -115,8 +118,8 @@ class TelegramAI(object):
         try:
             while True:
                 msg = self.queue.get()
-                LOGGER.info('Picked up message from queue - {}: {}'.format(msg.sender.name, msg.text))
-                self.process_response(msg)
+                LOGGER.info('Picked up message from queue - {}'.format(msg))
+                conversation_util.process_response(msg)
                 self.queue.task_done()
         except Exception as err:
             LOGGER.error('Sender worker error: %r' % err)
@@ -135,30 +138,17 @@ class TelegramAI(object):
         sender_worker.setDaemon(True)
         sender_worker.start()
 
-    def process_response(self, msg):
-        """
-        AI conversation logic goes here.
-        @param msg: Message object. sender details are stored
-                    in msg.sender, while receiver details (the bot) are stored in msg.receiver.
-                    Message text content (from the sender) is stored in msg.text
-                    See below for an example.
-        """
-        # db.insert_one('chat_history', {
-            
-        # })
-        if msg.text.lower() == 'hi':
-            response_message = 'Hi there {.first_name}!'.format(msg.sender)
-        else:
-            response_message = 'Sorry, I didn\'t quite get you.'
-
-        self.send('@{}'.format(msg.sender.username), response_message)
-
     def add_contact(self, phone, first_name, last_name=''):
         """
         Adds a contact. Contact must be added before the ai can start a conversation.
         """
-        self.sender.contact_add(phone, first_name, last_name)
+        result = self.sender.contact_add(phone, first_name, last_name)
+        if not result:
+            LOGGER.error('Telegram phone {} could not be added'.format(phone))
+            raise Exception('TELEGRAM_PHONE_NOT_FOUND')
 
+        username = result[0].username
+        return username
 
 
 def get_instance():
