@@ -25,7 +25,7 @@ class TelegramController(object):
             LOGGER.info('Telegram user authorized, fetching contacts...')
             telegram_user.get_contacts()
 
-        return {'contacts': newlist = sorted(telegram_user.contacts, key=lambda k: k['first_name'])}
+        return {'contacts': sorted(telegram_user.contacts, key=lambda k: k['first_name'])}
 
     def post(self, request_params, response):
         """
