@@ -53,7 +53,7 @@ class Event(object):
         Update username of specified recipient in the db.
         """
         sql = ("""
-            UPDATE `recipient` SET username = '%s'
+            UPDATE `recipient` SET username = %s
             WHERE id = %s
         """)
         print(recipient_id, username)
@@ -75,6 +75,18 @@ Will you be interested in going for {event_name}?
         })
 
         self.ai.send(recipient.get('username'), message)
+
+        sql = ("""
+            UPDATE `recipient` SET chat_status = 1
+            WHERE id = %s
+        """)
+
+        db.write(sql, params=(recipient['id'],))
+
+        db.insert_one('chat_history', {
+            'text': message,
+            'message_type': 'SENT'
+        })
 
     def start_conversations(self):
         """

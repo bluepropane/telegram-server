@@ -4,7 +4,7 @@ Telegram adapter for the AI account. Singleton instance.
 from pytg import Telegram
 from pytg.utils import coroutine
 from queue import Queue
-import conversation_util
+from conversation_util import Conversation
 import threading
 import db
 import logging
@@ -119,7 +119,7 @@ class TelegramAI(object):
             while True:
                 msg = self.queue.get()
                 LOGGER.info('Picked up message from queue - {}'.format(msg))
-                conversation_util.process_response(msg)
+                Conversation(msg).process_response()
                 self.queue.task_done()
         except Exception as err:
             LOGGER.error('Sender worker error: %r' % err)
