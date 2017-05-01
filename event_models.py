@@ -66,7 +66,7 @@ class Event(object):
         message = """
 Hey {name}! 
 
-This is Hey.ai and I am collecting event responses on behalf of your friend {organiser_name}.\
+This is Hey.ai and I am collecting event responses on behalf of your friend {organiser_name}. \
 Will you be interested in going for {event_name}?
         """.format(**{
             'name': recipient.get('name'),
