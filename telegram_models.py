@@ -24,7 +24,6 @@ class TelegramUserAccount(TelegramClient):
         if self.user_phone[0] != '+':
             self.user_phone = '+' + self.user_phone
 
-
         # Store all the found media in memory here,
         # so it can be downloaded if the user wants
         # self.found_media = set()
