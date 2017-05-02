@@ -46,9 +46,9 @@ class TelegramController(object):
             elif auth_type == 'code':
                 code = request_params.get('code')
                 identifier = request_params.get('identifier')[0]
+                telegram_user.phone_code_hashes.update({phone_number: identifier})
                 LOGGER.info('Authorizing telegram phone with hash {} and code {}'
                     .format(telegram_user.phone_code_hashes[phone_number], code))
-                telegram_user.phone_code_hashes.update({phone_number: identifier})
                 telegram_user.authorize_code(code)
         else:
             response.status = 208
