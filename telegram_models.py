@@ -47,7 +47,7 @@ class TelegramUserAccount(TelegramClient):
 
     def authorize_code(self, code):
         try:
-            signed_in = self.sign_in(self.user_phone, code)
+            signed_in = self.sign_in(self.user_phone[1:], code)
             if not signed_in:
                 raise Exception('Sign in failed, please try again.')
         # Two-step verification may be enabled

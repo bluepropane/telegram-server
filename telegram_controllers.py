@@ -49,7 +49,7 @@ class TelegramController(object):
                 telegram_user.phone_code_hashes.update({phone_number: identifier})
                 LOGGER.info('Authorizing telegram phone with hash {} and code {}'
                     .format(telegram_user.phone_code_hashes[phone_number], code))
-                telegram_user.authorize_code(phone_number, code)
+                telegram_user.authorize_code(code)
         else:
             response.status = 208
 
