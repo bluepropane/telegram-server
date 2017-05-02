@@ -32,7 +32,7 @@ class Conversation(object):
         else:
             response_message = 'Sorry, I didn\'t quite get you.'
 
-        self.send('@{}'.format(self.msg.sender.username), response_message)
+        return response_message
 
     def _log_chat_history_db(self):
         """

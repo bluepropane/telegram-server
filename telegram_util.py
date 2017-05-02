@@ -119,7 +119,6 @@ class TelegramAI(object):
             while True:
                 msg = self.queue.get()
                 LOGGER.info('Picked up message from queue - {}'.format(msg))
-                Conversation(msg).process_response()
                 self.queue.task_done()
         except Exception as err:
             LOGGER.error('Sender worker error: %r' % err)
@@ -150,6 +149,11 @@ class TelegramAI(object):
 
         username = result[0].username
         return username
+
+    def _process_response(self, msg):
+        """process message"""
+        reply_message = Conversation(msg).process_response()
+        self.send('@{}'.format(msg.sender.username), reply_message)
 
 
 def get_instance():
