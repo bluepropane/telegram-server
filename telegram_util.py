@@ -125,6 +125,7 @@ class TelegramAI(object):
             LOGGER.error('Sender worker error: %r' % err)
             LOGGER.info('Restarting telegram sender...')
             self._start_ai()
+            raise Exception(err)
 
     def start_ai(self):
         """
