@@ -27,7 +27,7 @@ class Conversation(object):
                     Message text content (from the sender) is stored in msg.text
                     See below for an example.
         """
-        if msg.text.lower() == 'hi':
+        if self.msg.text.lower() == 'hi':
             response_message = 'Hi there {.first_name}!'.format(self.msg.sender)
         else:
             response_message = 'Sorry, I didn\'t quite get you.'
