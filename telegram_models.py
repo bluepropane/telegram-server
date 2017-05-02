@@ -29,9 +29,19 @@ class TelegramUserAccount(TelegramClient):
         # so it can be downloaded if the user wants
         # self.found_media = set()
 
+    def __enter__(self):
+        """Initialize connection with Telegram server"""
         LOGGER.info('Connecting to Telegram servers...')
         self.connect()
         LOGGER.info(self.is_user_authorized())
+        return self
+
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        """Clean up after use"""
+        LOGGER.info('Telegram account session closed with exc_type={}, exc_val={}, exc_tb={}'\
+            .format(exc_type, exc_val, exc_tb))
+        self.disconnect()
 
     def authorize(self):
         """
