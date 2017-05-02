@@ -119,6 +119,7 @@ class TelegramAI(object):
             while True:
                 msg = self.queue.get()
                 LOGGER.info('Picked up message from queue - {}'.format(msg))
+                self._process_response(msg)
                 self.queue.task_done()
         except Exception as err:
             LOGGER.error('Sender worker error: %r' % err)
