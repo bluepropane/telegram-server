@@ -7,6 +7,7 @@ class Conversation(object):
         super().__init__()
         self.recipient_phone = msg.sender.phone
         self.msg = msg
+        self.response = None
 
     def _load_context_info(self):
 
@@ -28,19 +29,8 @@ class Conversation(object):
                     See below for an example.
         """
         if self.msg.text.lower() == 'hi':
-            response_message = 'Hi there {.first_name}!'.format(self.msg.sender)
+            self.response = 'Hi there {.first_name}!'.format(self.msg.sender)
         else:
-            response_message = 'Sorry, I didn\'t quite get you.'
+            self.response = 'Sorry, I didn\'t quite get you.'
 
-        return response_message
-
-    def _log_chat_history_db(self):
-        """
-        Insert message into db for recording
-        """
-        sql = ("""
-            INSERT INTO chat_history (`text`, )
-        """)
-        db.insert_one('chat_history', {
-            'text': self.msg.sender.text
-        })
+        return self.response

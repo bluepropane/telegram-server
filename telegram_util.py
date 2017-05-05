@@ -64,10 +64,12 @@ class TelegramAI(object):
         try:
             while True:
                 msg = (yield) # waits until it receives a message
-                if msg.event == 'message' and not msg.own:
-                    # we're only interested in text messages (for now)
-                    LOGGER.info("Message: ", msg)
-                    self.queue.put(msg)
+                if msg.event == 'message':
+                    self._log_chat_history_db(msg)
+                    if not msg.own:
+                        # we're only interested in text messages (for now)
+                        LOGGER.info("Message: ", msg)
+                        self.queue.put(msg)
 
         except Exception as err:
             LOGGER.error('Err: %r \n\n'.format(err))
@@ -155,6 +157,27 @@ class TelegramAI(object):
         """process message"""
         reply_message = Conversation(msg).process_response()
         self.send('@{}'.format(msg.sender.username), reply_message)
+
+    @staticmethod
+    def _log_chat_history_db(msg):
+        """
+        Insert message into db for recording
+        """
+        if msg.text:
+            msg_type = 'SENT' if msg.own else 'RECEIVED'
+            recipient_phone = msg.receiver.phone if msg.own else msg.sender.phone
+
+            sql = ("""
+                INSERT INTO chat_history (`message_type`, `recipient_id`, `text`, `event_id`)
+                VALUES (
+                    %s,
+                    (SELECT r.id FROM recipient r WHERE r.phone = %s),
+                    %s,
+                    (SELECT r.event_id FROM recipient r WHERE r.phone = %s)
+                )
+            """)
+
+            db.write(sql, params=(msg_type, recipient_phone, msg.text, recipient_phone))
 
 
 def get_instance():
