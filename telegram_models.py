@@ -75,12 +75,9 @@ class TelegramUserAccount(TelegramClient):
     def _parse_selected_contacts_range(self):
         if self.limit:
             start_index = self.limit * self.page
-            end_index = start_index + self.limit - 1
+            end_index = start_index + self.limit
         else:
             return
-
-        if end_index < len(self.contacts):
-            self.last_page = False
 
         return start_index, end_index
 
@@ -89,9 +86,8 @@ class TelegramUserAccount(TelegramClient):
             self.limit = int(limit)
             self.page = int(page) if page else self.page
 
-        start_index, end_index = self._parse_selected_contacts_range()
 
-        result = redis.lrange(self.user_phone, start_index, end_index)
+        result = redis.lrange(self.user_phone, 0, -1)
         if not result:
             response = self.invoke(GetContactsRequest(self.api_hash))
             result = response.users
@@ -108,6 +104,12 @@ class TelegramUserAccount(TelegramClient):
             redis.rpush(self.user_phone, *serialized_contacts)
         else:
             LOGGER.info('Using cached contacts result from redis')
+            if end_index < len(result):
+                self.last_page = False
+
+            start_index, end_index = self._parse_selected_contacts_range()
+            result = result[start_index:end_index]
+
             self.contacts = [json.loads(user.decode()) for user in result]
 
         redis.expire(self.user_phone, 900)
