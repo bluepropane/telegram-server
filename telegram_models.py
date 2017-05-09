@@ -109,6 +109,6 @@ class TelegramUserAccount(TelegramClient):
 
             self.contacts = [json.loads(user.decode()) for user in result[start_index:end_index]]
 
-        self.last_page = math.ceil(len(result) / 10)
+        self.last_page = math.ceil(len(result) / self.limit)
 
         redis.expire(self.user_phone, 900)
