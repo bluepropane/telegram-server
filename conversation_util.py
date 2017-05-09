@@ -31,6 +31,5 @@ class Conversation(object):
         if self.msg.text.lower() == 'hi':
             self.response = 'Hi there {.first_name}!'.format(self.msg.sender)
         else:
-            self.response = 'Sorry, I didn\'t quite get you.'
-
+            self.response = False
         return self.response

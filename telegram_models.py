@@ -107,6 +107,7 @@ class TelegramUserAccount(TelegramClient):
             LOGGER.info('Using cached contacts result from redis')
             start_index, end_index = self._parse_selected_contacts_range()
 
+            LOGGER.info('lolsult {}'.format(result[start_index:end_index]))
             self.contacts = [json.loads(user.decode()) for user in result[start_index:end_index]]
 
         self.last_page = math.ceil(len(result) / self.limit)

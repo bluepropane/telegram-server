@@ -156,7 +156,8 @@ class TelegramAI(object):
     def _process_response(self, msg):
         """process message"""
         reply_message = Conversation(msg).process_response()
-        self.send('@{}'.format(msg.sender.username), reply_message)
+        if reply_message is not False:
+            self.send('@{}'.format(msg.sender.username), reply_message)
 
     @staticmethod
     def _log_chat_history_db(msg):
