@@ -25,7 +25,10 @@ class TelegramController(object):
             else:
                 LOGGER.info('Telegram user authorized, fetching contacts...')
                 telegram_user.get_contacts(request_params.get('limit'), request_params.get('page'))
-                LOGGER.info('Fetched telegram contacts: {}'.format(telegram_user.contacts))
+                LOGGER.info('Fetched telegram contacts: {}'.format({
+                    'contacts': telegram_user.contacts,
+                    'last_page': telegram_user.last_page
+                }))
 
             return {
                 'contacts': telegram_user.contacts,
