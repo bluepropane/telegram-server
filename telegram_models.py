@@ -2,6 +2,7 @@ from telethon import TelegramClient, RPCError
 from telethon.tl.functions.contacts.get_contacts import GetContactsRequest
 from db import redis
 import json
+import math
 import os
 import logging
 
@@ -105,12 +106,9 @@ class TelegramUserAccount(TelegramClient):
         else:
             LOGGER.info('Using cached contacts result from redis')
             start_index, end_index = self._parse_selected_contacts_range()
-            
-            if end_index < len(result):
-                self.last_page = False
 
-            result = result[start_index:end_index]
+            self.contacts = [json.loads(user.decode()) for user in result[start_index:end_index]]
 
-            self.contacts = [json.loads(user.decode()) for user in result]
+        self.last_page = math.ceil(len(result) / 10)
 
         redis.expire(self.user_phone, 900)

@@ -3,4 +3,7 @@ if [ "$1" == "start" ]; then
 	nohup ./run_server_daemon.sh >/dev/null 2>log/main-process.log &
 elif [ "$1" == "stop" ]; then
 	kill $(pgrep -f "python server.py")
+elif [ "$1" == "restart" ]; then
+	./server stop
+	./server start
 fi
