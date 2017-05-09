@@ -17,15 +17,19 @@ class TelegramController(object):
         to be logged in first for this endpoint to work.
         """
         phone_number = sanitize_phone_number(request_params.get('phone')[0])
+        page = request_params.get('page')
         with TelegramUserAccount(phone_number, user_phone=phone_number) as telegram_user:
             if not telegram_user.is_user_authorized():
                 LOGGER.error('Telegram user unauthorized.')
                 raise Exception('Telegram user unauthorized.')
             else:
                 LOGGER.info('Telegram user authorized, fetching contacts...')
-                telegram_user.get_contacts()
+                telegram_user.get_contacts(request_params.get('limit'), request_params.get('page'))
 
-        return {'contacts': sorted(telegram_user.contacts, key=lambda k: k['first_name'])}
+        return {
+            'contacts': sorted(telegram_user.contacts, key=lambda k: k['first_name']),
+            'last_page': self.last_page
+        }
 
     def post(self, request_params, response):
         """

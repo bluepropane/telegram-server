@@ -18,7 +18,10 @@ class TelegramUserAccount(TelegramClient):
         self.api_id = api_id
         self.api_hash = api_hash
         self.user_phone = user_phone
-        self.result = {}
+        self.contacts = []
+        self.page = 0
+        self.limit = None
+        self.last_page = True
         if user_phone is None:
             self.user_phone = session_user_id 
         if self.user_phone[0] != '+':
@@ -68,9 +71,26 @@ class TelegramUserAccount(TelegramClient):
             else:
                 raise e
 
-    def get_contacts(self):
+    def _extract_selected_contacts(self, result):
+        if self.limit:
+            start_index = self.limit * self.page
+            end_index = start_index + self.limit
+        else:
+            return result
+
+        if end_index < len(result):
+            self.last_page = False
+
+        return result[start_index:start_index + self.limit]
+
+    def get_contacts(self, limit=None, page=None):
+        if limit:
+            self.limit = limit
+            self.page = page if page else self.page
+
         result = self.invoke(GetContactsRequest(self.api_hash))
-        self.contacts = []
+        result.users = self._extract_selected_contacts(result.users)
+
         for user in result.users:
             self.contacts.append({
                 'first_name': user.first_name,    
