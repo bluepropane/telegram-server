@@ -107,3 +107,15 @@ else
 	echo "Skipping python requirements installation..."
 fi
 
+if [ "$?" != "0" ] && stringContains "Linux" `uname` ; then
+	sudo apt-get install redis-server
+	sudo echo 'maxmemory 128mb\
+maxmemory-policy allkeys-lru' >> /etc/redis/redis.conf
+else
+	brew install redis
+	ln -sfv /usr/local/opt/redis/*.plist ~/Library/LaunchAgents
+	launchctl load ~/Library/LaunchAgents/homebrew.mxcl.redis.plist
+	sudo echo 'maxmemory 128mb\
+maxmemory-policy allkeys-lru' >> /usr/local/etc/redis.conf
+fi
+

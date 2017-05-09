@@ -16,7 +16,7 @@ class TelegramController(object):
         Endpoint called for retrieving the telegram contacts of the specified phone number. The phone number has
         to be logged in first for this endpoint to work.
         """
-        phone_number = sanitize_phone_number(request_params.get('phone')[0])
+        phone_number = sanitize_phone_number(request_params.get('phone'))
         page = request_params.get('page')
         with TelegramUserAccount(phone_number, user_phone=phone_number) as telegram_user:
             if not telegram_user.is_user_authorized():
@@ -25,11 +25,12 @@ class TelegramController(object):
             else:
                 LOGGER.info('Telegram user authorized, fetching contacts...')
                 telegram_user.get_contacts(request_params.get('limit'), request_params.get('page'))
+                LOGGER.info('Fetched telegram contacts: {}'.format(telegram_user.contacts))
 
-        return {
-            'contacts': sorted(telegram_user.contacts, key=lambda k: k['first_name']),
-            'last_page': self.last_page
-        }
+            return {
+                'contacts': telegram_user.contacts,
+                'last_page': telegram_user.last_page
+            }
 
     def post(self, request_params, response):
         """
@@ -37,8 +38,8 @@ class TelegramController(object):
         @param request_params: should contain an 'type' paramter. 'onboard' is for
                 the initialization of the flow, while 'code' is for verifying the authorization code.
         """
-        phone_number = sanitize_phone_number(request_params.get('phone')[0])
-        auth_type = request_params.get('type')[0]
+        phone_number = sanitize_phone_number(request_params.get('phone'))
+        auth_type = request_params.get('type')
         result = {}
         with TelegramUserAccount(phone_number, user_phone=phone_number) as telegram_user:
             if not telegram_user.is_user_authorized():
@@ -48,8 +49,8 @@ class TelegramController(object):
                     result = {"identifier": telegram_user.phone_code_hashes[phone_number]}
                     LOGGER.info(telegram_user.phone_code_hashes)
                 elif auth_type == 'code':
-                    code = request_params.get('code')[0]
-                    identifier = request_params.get('identifier')[0]
+                    code = request_params.get('code')
+                    identifier = request_params.get('identifier')
                     telegram_user.phone_code_hashes.update({phone_number: identifier})
                     LOGGER.info('Authorizing telegram phone with hash {} and code {}'
                         .format(telegram_user.phone_code_hashes[phone_number], code))

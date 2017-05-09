@@ -1,7 +1,7 @@
 import pymysql.cursors
 import json
 import atexit
-
+import redis as r
 
 config = json.load(open('creds/db.json'))
 
@@ -82,3 +82,5 @@ def insert_one(table_name, column_pairs):
         'values': ','.join([str(val) for val in column_pairs.values()]),
     }
     write(sql, params)
+
+redis = r.StrictRedis(host='localhost', port=6379, db=0)

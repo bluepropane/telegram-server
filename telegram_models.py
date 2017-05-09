@@ -1,5 +1,6 @@
 from telethon import TelegramClient, RPCError
 from telethon.tl.functions.contacts.get_contacts import GetContactsRequest
+from db import redis
 import json
 import os
 import logging
@@ -71,30 +72,42 @@ class TelegramUserAccount(TelegramClient):
             else:
                 raise e
 
-    def _extract_selected_contacts(self, result):
+    def _parse_selected_contacts_range(self):
         if self.limit:
             start_index = self.limit * self.page
-            end_index = start_index + self.limit
+            end_index = start_index + self.limit - 1
         else:
-            return result
+            return
 
-        if end_index < len(result):
+        if end_index < len(self.contacts):
             self.last_page = False
 
-        return result[start_index:start_index + self.limit]
+        return start_index, end_index
 
     def get_contacts(self, limit=None, page=None):
         if limit:
-            self.limit = limit
-            self.page = page if page else self.page
+            self.limit = int(limit)
+            self.page = int(page) if page else self.page
 
-        result = self.invoke(GetContactsRequest(self.api_hash))
-        result.users = self._extract_selected_contacts(result.users)
+        start_index, end_index = self._parse_selected_contacts_range()
 
-        for user in result.users:
-            self.contacts.append({
-                'first_name': user.first_name,    
-                'last_name': user.last_name,    
-                'phone': user.phone,    
-                'id': user.id
-            })
+        result = redis.lrange(self.user_phone, start_index, end_index)
+        if not result:
+            response = self.invoke(GetContactsRequest(self.api_hash))
+            result = response.users
+
+            for user in result:
+                self.contacts.append({
+                    'first_name': user.first_name,    
+                    'last_name': user.last_name,    
+                    'phone': user.phone,    
+                    'id': user.id
+                })
+            self.contacts.sort(key=lambda k: k['first_name'])
+            serialized_contacts = [json.dumps(user) for user in self.contacts]
+            redis.rpush(self.user_phone, *serialized_contacts)
+        else:
+            LOGGER.info('Using cached contacts result from redis')
+            self.contacts = [json.loads(user) for user in result]
+
+        redis.expire(self.user_phone, 900)

@@ -31,33 +31,25 @@ def service_handler(service):
     #   'query': request.query.dict,
     #   'params': request.params
     # }))
-    try:
-        response.status = 200
-        request_params = {}
+    response.status = 200
+    request_params = {}
 
-        for field_type in ['query', 'forms']:
-            field = getattr(request, field_type)
-            if field:
-                print('%s: %s' % (field_type, field.dict))
-                request_params.update(field.dict)
+    for field_type in ['query', 'forms']:
+        field = getattr(request, field_type)
+        if field:
+            field_value = {k: v[0] for k, v in field.dict.items()}
+            print('%s: %s' % (field_type, field_value))
+            request_params.update(field_value)
 
-        if request.json:
-            print('json: %s' % request.json)
-            request_params.update(request.json)
+    if request.json:
+        print('json: %s' % request.json)
+        request_params.update(request.json)
 
-        print(request_params)
-        service = SERVICES[service]
-        func = getattr(service(), request.method.lower())
-        res = func(request_params, response)
-    except Exception as err:
-        err_message = 'service_handler error: %r' % err
-        print(err_message)
-        LOGGER.error(err_message)
-        response.status = 500
-        res = 'Internal Server Error.'
-        raise Exception(err)
-    finally:
-        return res
+    print(request_params)
+    service = SERVICES[service]
+    func = getattr(service(), request.method.lower())
+    res = func(request_params, response)
+    return res
 
 
 def main(port=8080):
