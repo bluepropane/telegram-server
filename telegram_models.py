@@ -104,10 +104,11 @@ class TelegramUserAccount(TelegramClient):
             redis.rpush(self.user_phone, *serialized_contacts)
         else:
             LOGGER.info('Using cached contacts result from redis')
+            start_index, end_index = self._parse_selected_contacts_range()
+            
             if end_index < len(result):
                 self.last_page = False
 
-            start_index, end_index = self._parse_selected_contacts_range()
             result = result[start_index:end_index]
 
             self.contacts = [json.loads(user.decode()) for user in result]
