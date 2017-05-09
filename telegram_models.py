@@ -48,7 +48,6 @@ class TelegramUserAccount(TelegramClient):
             .format(exc_type, exc_val, exc_tb))
         self.disconnect()
         if exc_type and exc_tb:
-            LOGGER.error(exc_tb.format())
             raise exc_type(exc_tb)
 
     def authorize(self):
