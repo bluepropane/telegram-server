@@ -108,6 +108,6 @@ class TelegramUserAccount(TelegramClient):
             redis.rpush(self.user_phone, *serialized_contacts)
         else:
             LOGGER.info('Using cached contacts result from redis')
-            self.contacts = [json.loads(user) for user in result]
+            self.contacts = [json.loads(user.decode()) for user in result]
 
         redis.expire(self.user_phone, 900)
