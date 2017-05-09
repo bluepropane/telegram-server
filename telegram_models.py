@@ -47,6 +47,8 @@ class TelegramUserAccount(TelegramClient):
         LOGGER.info('Telegram account session closed with exc_type={}, exc_val={}, exc_tb={}'\
             .format(exc_type, exc_val, exc_tb))
         self.disconnect()
+        if exc_type and exc_tb:
+            raise exc_type(exc_tb)
 
     def authorize(self):
         """
