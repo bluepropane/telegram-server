@@ -34,6 +34,7 @@ def read(sql, params=None):
     try:
         LOGGER.info('DB: executed {}'.format((sql % params) if params else sql))
         with connection.cursor() as cursor:
+            result = None
             cursor.execute(sql, params)
             if 'LIMIT 1' in sql.upper():
                 result = cursor.fetchone()
