@@ -2,6 +2,9 @@ import pymysql.cursors
 import json
 import atexit
 import redis as r
+import logging
+
+LOGGER = logging.getLogger(__name__)
 
 config = json.load(open('creds/db.json'))
 
@@ -36,10 +39,10 @@ def read(sql, params=None):
             else:
                 result = cursor.fetchall()
 
-            print('DB: executed {} ---- result: {}'.format(sql, result))
+            LOGGER.info('DB: executed {} ---- result: {}'.format(sql, result))
             return result
     except Exception as err:
-        print('DB err: %r' % err)
+        LOGGER.error('DB err: %r' % err)
 
 
 def write(sql, params=None):
@@ -54,12 +57,12 @@ def write(sql, params=None):
             # Create a new record
             cursor.execute(sql, params)
 
-            print('DB: executed {}'.format(sql))
+            LOGGER.info('DB: executed {}'.format(sql))
 
         connection.commit()
 
     except Exception as err:
-        print('DB err: %r' % err)
+        LOGGER.error('DB err: %r' % err)
 
 def insert_one(table_name, column_pairs):
     """
