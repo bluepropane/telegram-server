@@ -22,6 +22,7 @@ class Event(object):
             SELECT r.id, r.name, r.phone, r.username FROM recipient r
             WHERE r.event_id = %s
             AND r.chat_status = 0
+            AND r.recipient_status = 'ACTIVE'
         """)
 
         self.recipients = db.read(sql, params=(self.event_id,))

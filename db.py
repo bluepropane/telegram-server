@@ -32,6 +32,7 @@ def read(sql, params=None):
     @return result: {list} and {dict} for fetchall() and fetchone() respectively.
     """
     try:
+        LOGGER.info('DB: executed {}'.format(sql.format(params)))
         with connection.cursor() as cursor:
             cursor.execute(sql, params)
             if 'LIMIT 1' in sql.upper():
@@ -39,7 +40,7 @@ def read(sql, params=None):
             else:
                 result = cursor.fetchall()
 
-            LOGGER.info('DB: executed {} ---- result: {}'.format(sql, result))
+            LOGGER.info('---- result: {}'.format(result))
             return result
     except Exception as err:
         LOGGER.error('DB err: %r' % err)
@@ -57,7 +58,7 @@ def write(sql, params=None):
             # Create a new record
             cursor.execute(sql, params)
 
-            LOGGER.info('DB: executed {}'.format(sql))
+            LOGGER.info('DB: executed {}'.format(sql.format(params)))
 
         connection.commit()
 
