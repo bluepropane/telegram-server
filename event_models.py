@@ -96,6 +96,9 @@ Will you be interested in going for {event_name}?
         self._load_event_details()
         self._load_recipients_list_from_db()
 
+        if not self.recipients:
+            LOGGER.warn('No recipients found for event id {}'.format(self.event_id))
+
         for recipient in self.recipients:
             username = self.ai.add_contact(recipient.get('phone'), recipient.get('name'))
             recipient['username'] = username
