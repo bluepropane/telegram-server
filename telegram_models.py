@@ -96,13 +96,13 @@ class TelegramUserAccount(TelegramClient):
 
             for user in result:
                 self.contacts.append({
-                    'first_name': user.first_name,    
-                    'last_name': user.last_name,    
+                    'first_name': user.first_name,
+                    'last_name': user.last_name,
+                    'name': user.name,
                     'phone': user.phone,    
                     'id': user.id
                 })
-            LOGGER.info('contacts: {}'.format(self.contacts));
-            self.contacts.sort(key=lambda k: k['first_name'])
+            self.contacts.sort(key=lambda k: k['name'])
             serialized_contacts = [json.dumps(user) for user in self.contacts]
             redis.rpush(self.session_user_id, *serialized_contacts)
         else:
