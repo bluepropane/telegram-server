@@ -19,7 +19,7 @@ class Event(object):
         Load the recipients associated with the event id from db
         """
         sql = ("""
-            SELECT r.id, r.name, r.phone, r.username FROM recipient r
+            SELECT r.id, r.name, r.phone, r.peer_id FROM recipient r
             WHERE r.event_id = %s
             -- AND r.chat_status = 0
             -- AND r.recipient_status = 'ACTIVE'
@@ -49,9 +49,9 @@ class Event(object):
         self.event_organiser = row['event_organiser']
 
 
-    def _update_username(self, recipient):
+    def _update_peer_id(self, recipient):
         """
-        Update username of specified recipient in the db.
+        Update peer_id of specified recipient in the db.
         """
         sql = ("""
             UPDATE `recipient` SET peer_id = %s
@@ -75,7 +75,7 @@ Will you be interested in going for {event_name}?
             'event_name': self.event_name
         })
 
-        self.ai.send(recipient.get('username'), message)
+        self.ai.send(recipient.get('peer_id'), message)
 
         sql = ("""
             UPDATE `recipient` SET chat_status = 1
@@ -102,5 +102,5 @@ Will you be interested in going for {event_name}?
         for recipient in self.recipients:
             peer_id = self.ai.add_contact(recipient.get('phone'), recipient.get('name'))
             recipient['peer_id'] = peer_id
-            self._update_username(recipient)
+            self._update_peer_id(recipient)
             self._start_conversation(recipient)
