@@ -83,6 +83,14 @@ class TelegramUserAccount(TelegramClient):
 
         return start_index, end_index
 
+    @staticmethod
+    def _contact_comparator(contact):
+        if contact['first_name'] is not None:
+            return contact['first_name']
+        else:
+            return contact['last_name']
+
+
     def get_contacts(self, limit=None, page=None):
         if limit:
             self.limit = int(limit)
@@ -101,7 +109,7 @@ class TelegramUserAccount(TelegramClient):
                     'phone': user.phone,    
                     'id': user.id
                 })
-            self.contacts.sort(key=lambda k: k['first_name'])
+            self.contacts.sort(key=self._contact_comparator)
             serialized_contacts = [json.dumps(user) for user in self.contacts]
             redis.rpush(self.session_user_id, *serialized_contacts)
         else:
