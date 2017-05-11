@@ -47,6 +47,8 @@ class TelegramUserAccount(TelegramClient):
         LOGGER.info('Telegram account session closed with exc_type={}, exc_val={}, exc_tb={}'\
             .format(exc_type, exc_val, exc_tb))
         self.disconnect()
+        if exc_type:
+            raise exc_type(exc_val)
 
     def authorize(self):
         """
@@ -115,8 +117,6 @@ class TelegramUserAccount(TelegramClient):
         else:
             LOGGER.info('Using cached contacts result from redis')
             start_index, end_index = self._parse_selected_contacts_range()
-
-            LOGGER.info('lolsult {}'.format(result[start_index:end_index]))
             self.contacts = [json.loads(user.decode()) for user in result[start_index:end_index]]
 
         if self.limit is None:
