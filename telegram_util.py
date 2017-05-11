@@ -150,14 +150,14 @@ class TelegramAI(object):
             LOGGER.error('Telegram phone {} could not be added'.format(phone))
             raise Exception('TELEGRAM_PHONE_NOT_FOUND')
 
-        username = result[0].username
-        return username
+        peer_id = result[0].id
+        return peer_id
 
     def _process_response(self, msg):
         """process message"""
         reply_message = Conversation(msg).process_response()
         if reply_message is not False:
-            self.send('@{}'.format(msg.sender.username), reply_message)
+            self.send('{}'.format(msg.sender.id), reply_message)
 
     @staticmethod
     def _log_chat_history_db(msg):

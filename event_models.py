@@ -49,16 +49,16 @@ class Event(object):
         self.event_organiser = row['event_organiser']
 
 
-    def _update_username(self, recipient_id, username):
+    def _update_username(self, recipient):
         """
         Update username of specified recipient in the db.
         """
         sql = ("""
-            UPDATE `recipient` SET username = %s
+            UPDATE `recipient` SET peer_id = %s
             WHERE id = %s
         """)
-        print(recipient_id, username)
-        db.write(sql, params=(username, recipient_id))
+        print(recipient['id'], recipient['peer_id'])
+        db.write(sql, params=(recipient['peer_id'], recipient['id']))
 
     def _start_conversation(self, recipient):
         """
@@ -100,7 +100,7 @@ Will you be interested in going for {event_name}?
             LOGGER.warn('No recipients found for event id {}'.format(self.event_id))
 
         for recipient in self.recipients:
-            username = self.ai.add_contact(recipient.get('phone'), recipient.get('name'))
-            recipient['username'] = username
-            self._update_username(recipient['id'], username)
+            peer_id = self.ai.add_contact(recipient.get('phone'), recipient.get('name'))
+            recipient['peer_id'] = peer_id
+            self._update_username(recipient)
             self._start_conversation(recipient)
