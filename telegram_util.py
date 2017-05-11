@@ -106,7 +106,7 @@ class TelegramAI(object):
         if isinstance(peers, str):
             peers = [peers]
 
-        if isinstance(peer, list):
+        if isinstance(peers, list):
             for peer in peers:
                 self.sender.send_msg(peer, msg)
 
