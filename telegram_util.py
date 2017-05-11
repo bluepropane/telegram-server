@@ -170,9 +170,11 @@ class TelegramAI(object):
                 INSERT INTO chat_history (`message_type`, `recipient_id`, `text`, `event_id`)
                 VALUES (
                     %s,
-                    (SELECT r.id FROM recipient r WHERE r.phone = %s LIMIT 1),
+                    (SELECT r.id FROM recipient r WHERE r.phone = %s
+                    ORDER BY r.id DESC LIMIT 1),
                     %s,
-                    (SELECT r.event_id FROM recipient r WHERE r.phone = %s LIMIT 1)
+                    (SELECT r.event_id FROM recipient r WHERE r.phone = %s
+                    ORDER BY r.id DESC LIMIT 1)
                 )
             """)
 
