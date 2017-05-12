@@ -1,3 +1,4 @@
+from pymysql.err import InterfaceError
 import pymysql.cursors
 import json
 import atexit
@@ -8,20 +9,22 @@ LOGGER = logging.getLogger(__name__)
 
 config = json.load(open('creds/db.json'))
 
-connection = pymysql.connect(host=config.get('host'),
-                             user=config.get('user'),
-                             password=config.get('pass'),
-                             port=config.get('port'),
-                             db=config.get('db'),
-                             charset='utf8mb4',
-                             cursorclass=pymysql.cursors.DictCursor)
-
 def cleanup():
     if connection:
         connection.close()
         print('Closed connection to db')
 
 atexit.register(cleanup)
+
+def _connect():
+    return pymysql.connect(host=config.get('host'),
+                             user=config.get('user'),
+                             password=config.get('pass'),
+                             port=config.get('port'),
+                             db=config.get('db'),
+                             charset='utf8mb4',
+                             cursorclass=pymysql.cursors.DictCursor)
+connection = _connect()
 
 def read(sql, params=None):
     """
@@ -43,6 +46,10 @@ def read(sql, params=None):
 
             LOGGER.info('---- result: {}'.format(result))
             return result
+
+    except InterfaceError:
+        LOGGER.warn('reestablishing connection to db')
+        connection = _connect()
     except Exception as err:
         LOGGER.error('DB err: %r' % err)
 
@@ -62,7 +69,9 @@ def write(sql, params=None):
             LOGGER.info('DB: executed {}'.format((sql % params) if params else sql))
 
         connection.commit()
-
+    except InterfaceError:
+        LOGGER.warn('reestablishing connection to db')
+        connection = _connect()
     except Exception as err:
         LOGGER.error('DB err: %r' % err)
 

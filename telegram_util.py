@@ -64,8 +64,8 @@ class TelegramAI(object):
         try:
             while True:
                 msg = (yield) # waits until it receives a message
-                LOGGER.info("event: {}".format(msg))
                 if msg.event == 'message':
+                    LOGGER.info('Received message - {}'.format(msg))
                     self._log_chat_history_db(msg)
                     if not msg.own:
                         # we're only interested in text messages (for now)
@@ -118,7 +118,6 @@ class TelegramAI(object):
         try:
             while True:
                 msg = self.queue.get()
-                LOGGER.info('Picked up message from queue - {}'.format(msg))
                 self._process_response(msg)
                 self.queue.task_done()
         except Exception as err:
