@@ -34,6 +34,7 @@ def read(sql, params=None):
     @param {tuple} params: to be formatted into the SQL querystring
     @return result: {list} and {dict} for fetchall() and fetchone() respectively.
     """
+    global connection
     try:
         LOGGER.info('DB: executed {}'.format((sql % params) if params else sql))
         with connection.cursor() as cursor:
@@ -61,6 +62,7 @@ def write(sql, params=None):
     @param {tuple} params: to be formatted into the SQL querystring
     @return result: {list} and {dict} for fetchall() and fetchone() respectively.
     """
+    global connection
     try:
         with connection.cursor() as cursor:
             # Create a new record
