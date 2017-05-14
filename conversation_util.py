@@ -36,6 +36,3 @@ class Conversation(object):
             self.response = False
 
         return self.response
-        
-        else:
-            self.response = False
