@@ -30,6 +30,12 @@ class Conversation(object):
         """
         if self.msg.text.lower() == 'hi':
             self.response = 'Hi there {.first_name}!'.format(self.msg.sender)
+        elif self.msg.text.lower() == 'u suck':
+            self.response = 'u suck more suck my dik fag {.first_name}!'.format(self.msg.sender)
         else:
             self.response = False
+
         return self.response
+        
+        else:
+            self.response = False
