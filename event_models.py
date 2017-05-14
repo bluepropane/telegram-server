@@ -12,6 +12,7 @@ class Event(object):
         self.event_id = event_id
         self.event_name = None
         self.event_organiser = None
+        self.recipients = None
         self.ai = telegram_util.get_instance()
 
     def _load_recipients_list_from_db(self):
@@ -104,3 +105,13 @@ Will you be interested in going for {event_name}?
             recipient['peer_id'] = peer_id
             self._update_peer_id(recipient)
             self._start_conversation(recipient)
+
+    def get_details(self):
+        sql = ("""
+           SELECT r.id, r.name FROM recipient AS r
+           JOIN event AS e WHERE r.event_id = e.id
+           AND e.id = %s
+        """)
+
+        data = db.read(sql, params=(self.event_id,))
+        self.recipients = data

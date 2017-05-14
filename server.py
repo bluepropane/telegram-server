@@ -1,6 +1,7 @@
 from bottle import Bottle, request, response
 from telegram_controllers import TelegramController
 from event_controllers import EventController
+from broadcast_controllers import BroadcastController
 import telegram_util
 import logging
 
@@ -9,7 +10,8 @@ LOGGER = logging.getLogger(__name__)
 
 SERVICES = {
     'telegram': TelegramController,
-    'event': EventController
+    'event': EventController,
+    'broadcast': BroadcastController
 }
 
 # call it once here to load it up

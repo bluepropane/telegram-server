@@ -13,6 +13,10 @@ class EventController(object):
         Get the bot chat history with all recipients for a particular event
         """
         phone_number = sanitize_phone_number(request_params.get('phone')[0])
+        event = Event(request_params.get('id'))
+        event.get_details()
+
+        return {"recipients": event.recipients}
 
     def post(self, request_params, response):
         """
