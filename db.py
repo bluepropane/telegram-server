@@ -1,4 +1,4 @@
-from pymysql.err import InterfaceError
+from pymysql.err import InterfaceError, OperationalError
 import pymysql.cursors
 import json
 import atexit
@@ -49,7 +49,10 @@ def read(sql, params=None):
             return result
 
     except InterfaceError:
-        LOGGER.warn('reestablishing connection to db')
+        LOGGER.debug('mysql connection closed; re-establishing connection to db')
+        connection = _connect()
+    except OperationalError:
+        LOGGER.debug('my connection broken; re-establishing connection to db')
         connection = _connect()
     except Exception as err:
         LOGGER.error('DB err: %r' % err)
@@ -72,7 +75,10 @@ def write(sql, params=None):
 
         connection.commit()
     except InterfaceError:
-        LOGGER.warn('reestablishing connection to db')
+        LOGGER.debug('re-establishing connection to db')
+        connection = _connect()
+    except OperationalError:
+        LOGGER.debug('re-establishing connection to db')
         connection = _connect()
     except Exception as err:
         LOGGER.error('DB err: %r' % err)
