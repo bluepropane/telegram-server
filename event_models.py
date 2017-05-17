@@ -120,7 +120,7 @@ In case you forget, your event ID is {event_id}. You can use this reference to k
         self._load_event_details()
         self._load_recipients_list_from_db()
 
-        self.organiser_peer_id = self.ai.add_contact(self.event_organiser, self.organiser_phone)
+        self.organiser_peer_id = self.ai.add_contact(self.organiser_phone, self.event_organiser)
         self._update_organiser_peer_id()
         self._notify_organiser()
 
