@@ -35,7 +35,7 @@ class Event(object):
         """
 
         sql = ("""
-            SELECT e.event_name, e.event_organiser FROM event e
+            SELECT e.event_name, e.event_organiser, e.organiser_phone FROM event e
             WHERE e.id = %s
             LIMIT 1
         """)
@@ -48,7 +48,7 @@ class Event(object):
         LOGGER.info('Loaded event details from db: {}'.format(row))
         self.event_name = row['event_name']
         self.event_organiser = row['event_organiser']
-
+        self.organiser_phone = row['organiser_phone']
 
     def _update_peer_id(self, recipient):
         """
@@ -58,7 +58,6 @@ class Event(object):
             UPDATE `recipient` SET peer_id = %s
             WHERE id = %s
         """)
-        print(recipient['id'], recipient['peer_id'])
         db.write(sql, params=(recipient['peer_id'], recipient['id']))
 
     def _start_conversation(self, recipient):
@@ -90,12 +89,40 @@ Will you be interested in going for {event_name}?
             'message_type': 'SENT'
         })
 
+    def _update_organiser_peer_id(self):
+        sql = ("""
+            UPDATE `event` SET organiser_peer_id = %s
+            WHERE id = %s
+        """)
+        db.write(sql, params=(self.organiser_peer_id, self.event_id))
+
+    def _notify_organiser(self):
+        """
+        Notify organiser on creation of event and event id through telegram.
+        """
+        messages = ["""
+Hey {name},
+Thanks for using HeyAI! This is Andy, your personal event planner.
+""".format(**{'name': self.organiser_name}),
+"""
+I see that you have just created an event.
+In case you forget, your event ID is {event_id}. You can use this reference to keep track of your event responses on http://liwieong.club.
+""".format(**{'event_id': self.event_id})]
+
+        for message in messages:
+            self.ai.send(self.organiser_peer_id, message)
+
+
     def start_conversations(self):
         """
         Get the telegram AI to start the event-related conversations with the recipients
         """
         self._load_event_details()
         self._load_recipients_list_from_db()
+
+        self.organiser_peer_id = self.ai.add_contact(self.event_organiser, self.organiser_phone)
+        self._update_organiser_peer_id()
+        self._notify_organiser()
 
         if not self.recipients:
             LOGGER.warn('No recipients found for event id {}'.format(self.event_id))
