@@ -103,7 +103,7 @@ Will you be interested in going for {event_name}?
         messages = ["""
 Hey {name},
 Thanks for using HeyAI! This is Andy, your personal event planner.
-""".format(**{'name': self.organiser_name}),
+""".format(**{'name': self.event_organiser}),
 """
 I see that you have just created an event.
 In case you forget, your event ID is {event_id}. You can use this reference to keep track of your event responses on http://liwieong.club.
