@@ -22,8 +22,6 @@ class Event(object):
         sql = ("""
             SELECT r.id, r.name, r.phone, r.peer_id FROM recipient r
             WHERE r.event_id = %s
-            -- AND r.chat_status = 0
-            -- AND r.recipient_status = 'ACTIVE'
         """)
 
         self.recipients = db.read(sql, params=(self.event_id,))
@@ -68,7 +66,7 @@ class Event(object):
 Hey {name}! 
 
 This is Hey.ai and I am collecting event responses on behalf of your friend {organiser_name}. \
-Will you be interested in going for {event_name}?
+Will you be interested in going for {event_name}? (yes/no)
         """.format(**{
             'name': recipient.get('name'),
             'organiser_name': self.event_organiser,
@@ -78,7 +76,7 @@ Will you be interested in going for {event_name}?
         self.ai.send(recipient.get('peer_id'), message)
 
         sql = ("""
-            UPDATE `recipient` SET chat_status = 1
+            UPDATE `recipient` SET chat_status = 10
             WHERE id = %s
         """)
 

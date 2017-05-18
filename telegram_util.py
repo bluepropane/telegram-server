@@ -99,16 +99,14 @@ class TelegramAI(object):
         """
         self.observer.append(callback)
 
-    def send(self, peers, msg):
+    def send(self, peer, msg):
         """
-        Sends a message to the specified username(s)
+        Sends message(s) to the specified peer_id
         """
-        if isinstance(peers, str):
-            peers = [peers]
-
-        if isinstance(peers, list):
-            for peer in peers:
-                self.sender.send_msg(peer, msg)
+        if not isinstance(msg, list):
+            msg = [msg]
+        for _msg in msg:
+            self.sender.send_msg(peer, _msg)
 
     def _start_ai(self):
         """
