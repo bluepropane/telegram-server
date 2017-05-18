@@ -13,7 +13,7 @@ class Conversation(object):
     def _load_context_info(self):
 
         sql = ("""
-            SELECT r.chat_status, e.event_id FROM recipient AS r
+            SELECT r.chat_status, r.id, e.event_id FROM recipient AS r
             JOIN event AS e
                 ON e.id = r.event_id
             WHERE r.phone = %s
@@ -22,6 +22,7 @@ class Conversation(object):
         row = db.read(sql, params=(self.recipient_phone,))
         if row:
             self.recipient_chat_status = row['chat_status']
+            self.recipient_id = row['id']
 
     def _update_chat_status(self, chat_status):
 
