@@ -1,4 +1,5 @@
 from pymysql.err import InterfaceError, OperationalError
+from queue import Queue
 import pymysql.cursors
 import json
 import atexit
@@ -51,6 +52,7 @@ class ConnectionPool():
     def close(self):
         while not self.is_empty():
             self.pool.get().close()
+        print('closed connection pool')
 
     def ping(self, db):
         data = db.query('SELECT 1', [])
@@ -62,22 +64,14 @@ class ConnectionPool():
     def is_empty(self):
         return self.pool.empty()
 
+pool = ConnectionPool(config)
+
+
 def cleanup():
-    if connection:
-        connection.close()
-        print('Closed connection to db')
+    pool.close()
 
 atexit.register(cleanup)
 
-def _connect():
-    return pymysql.connect(host=config.get('host'),
-                             user=config.get('user'),
-                             password=config.get('pass'),
-                             port=config.get('port'),
-                             db=config.get('db'),
-                             charset='utf8mb4',
-                             cursorclass=pymysql.cursors.DictCursor)
-connection = _connect()
 
 def read(sql, params=None):
     """
@@ -87,7 +81,7 @@ def read(sql, params=None):
     @param {tuple} params: to be formatted into the SQL querystring
     @return result: {list} and {dict} for fetchall() and fetchone() respectively.
     """
-    global connection
+    connection = pool.get_connection()
     try:
         LOGGER.info('DB: executed {}'.format((sql % params) if params else sql))
         with connection.cursor() as cursor:
@@ -101,14 +95,10 @@ def read(sql, params=None):
             LOGGER.info('---- result: {}'.format(result))
             return result
 
-    except InterfaceError:
-        LOGGER.debug('mysql connection closed; re-establishing connection to db')
-        connection = _connect()
-    except OperationalError:
-        LOGGER.debug('my connection broken; re-establishing connection to db')
-        connection = _connect()
     except Exception as err:
-        LOGGER.error('DB err: %r' % err)
+        raise err
+    finally:
+        pool.return_connection(connection)
 
 
 def write(sql, params=None):
@@ -118,7 +108,7 @@ def write(sql, params=None):
     @param {tuple} params: to be formatted into the SQL querystring
     @return result: {list} and {dict} for fetchall() and fetchone() respectively.
     """
-    global connection
+    connection = pool.get_connection()
     try:
         with connection.cursor() as cursor:
             # Create a new record
@@ -127,14 +117,10 @@ def write(sql, params=None):
             LOGGER.info('DB: executed {}'.format((sql % params) if params else sql))
 
         connection.commit()
-    except InterfaceError:
-        LOGGER.debug('re-establishing connection to db')
-        connection = _connect()
-    except OperationalError:
-        LOGGER.debug('re-establishing connection to db')
-        connection = _connect()
     except Exception as err:
-        LOGGER.error('DB err: %r' % err)
+        raise err
+    finally:
+        pool.return_connection(connection)
 
 def insert_one(table_name, column_pairs):
     """

@@ -5,6 +5,7 @@ from broadcast_controllers import BroadcastController
 import telegram_util
 import logging
 
+
 logging.basicConfig(filename='log/access-error.log',level=logging.INFO)
 LOGGER = logging.getLogger(__name__)
 
@@ -33,25 +34,29 @@ def service_handler(service):
     #   'query': request.query.dict,
     #   'params': request.params
     # }))
-    response.status = 200
-    request_params = {}
+    try:
+        response.status = 200
+        request_params = {}
 
-    for field_type in ['query', 'forms']:
-        field = getattr(request, field_type)
-        if field:
-            field_value = {k: v[0] for k, v in field.dict.items()}
-            print('%s: %s' % (field_type, field_value))
-            request_params.update(field_value)
+        for field_type in ['query', 'forms']:
+            field = getattr(request, field_type)
+            if field:
+                field_value = {k: v[0] for k, v in field.dict.items()}
+                print('%s: %s' % (field_type, field_value))
+                request_params.update(field_value)
 
-    if request.json:
-        print('json: %s' % request.json)
-        request_params.update(request.json)
+        if request.json:
+            print('json: %s' % request.json)
+            request_params.update(request.json)
 
-    print(request_params)
-    service = SERVICES[service]
-    func = getattr(service(), request.method.lower())
-    res = func(request_params, response)
-    return res
+        print(request_params)
+        service = SERVICES[service]
+        func = getattr(service(), request.method.lower())
+        res = func(request_params, response)
+        return res
+    except Exception as err:
+        LOGGER.error(err, exc_info=1)
+        raise
 
 
 def main(port=8080):

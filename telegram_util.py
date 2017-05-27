@@ -72,7 +72,7 @@ class TelegramAI(object):
                         self.queue.put(msg)
 
         except Exception as err:
-            LOGGER.error('Err: %r \n\n'.format(err))
+            raise err
         finally:
             LOGGER.info('Shutting down receiver')
             self.receiver.stop()
@@ -119,10 +119,9 @@ class TelegramAI(object):
                 self._process_response(msg)
                 self.queue.task_done()
         except Exception as err:
-            LOGGER.error('Sender worker error: %r' % err)
+            LOGGER.exception('Sender worker error:')
             LOGGER.info('Restarting telegram sender...')
             self._start_ai()
-            raise Exception(err)
 
     def start_ai(self):
         """

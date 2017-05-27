@@ -9,6 +9,7 @@ class Conversation(object):
         self.recipient_id = None
         self.msg = msg
         self.response = None
+        self.recipient_chat_status = None
 
     def _load_context_info(self):
 
@@ -50,7 +51,7 @@ class Conversation(object):
                     Message text content (from the sender) is stored in msg.text
                     See below for an example.
         """
-        if self.chat_status == 10:
+        if self.recipient_chat_status == 10:
             self._update_chat_status(20)
             self._handle_initial_rsvp()
 
