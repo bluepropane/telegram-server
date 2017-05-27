@@ -82,11 +82,6 @@ Will you be interested in going for {event_name}? (yes/no)
 
         db.write(sql, params=(recipient['id'],))
 
-        db.insert_one('chat_history', {
-            'text': message,
-            'message_type': 'SENT'
-        })
-
     def _update_organiser_peer_id(self):
         sql = ("""
             UPDATE `event` SET organiser_peer_id = %s
