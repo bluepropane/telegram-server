@@ -42,7 +42,7 @@ class ConnectionPool():
 
         # checks if db is still connected because db instance automatically closes when not in used
         try:
-            healthy = self.ping(db):
+            healthy = self.ping(db)
             if not healthy:
                 db.connect()
         except OperationalError as err:
