@@ -41,7 +41,13 @@ class ConnectionPool():
         db = self.pool.get(True)
 
         # checks if db is still connected because db instance automatically closes when not in used
-        if not self.ping(db):
+        try:
+            healthy = self.ping(db):
+            if not healthy:
+                db.connect()
+        except OperationalError as err:
+            LOGGER.error(err)
+            LOGGER.info('Reconnecting...')
             db.connect()
 
         return db
